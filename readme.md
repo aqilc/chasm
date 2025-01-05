@@ -27,7 +27,7 @@ int main() {
 }
 ```
 
-Download (`asm_x64.c`)[asm_x64.c] and (`asm_x64.h`)[asm_x64.h] into your project and just include (`asm_x64.h`)[asm_x64.h] to start assembling!
+Download [`asm_x64.c`](asm_x64.c) and [`asm_x64.h`](asm_x64.h) into your project and just include [`asm_x64.h`](asm_x64.h) to start assembling!
 
 Features
 --------
@@ -62,7 +62,7 @@ API
 
 ## Code
 
-`x64` is an array of `x64Ins` structs. The first member of the struct is `op`, or the operation, an enum defined by the **(`asm_x64.h`)[asm_x64.h]** header. The other 4 members are `x64Operand` structs, which are just a combination of the type of operand with the value.
+`x64` is an array of `x64Ins` structs. The first member of the struct is `op`, or the operation, an enum defined by the **[`asm_x64.h`](asm_x64.h)** header. The other 4 members are `x64Operand` structs, which are just a combination of the type of operand with the value.
 
 An example instruction `mov rax, 0` would be written as:
 
@@ -138,7 +138,7 @@ Currently does not support protected mode instructions (32 bit instructions) and
 
 **I currently do not support AVX-512!!**
 
-This is because AVX-512 has a lot of limitations ((SIMD instructions lowering CPU frequency)[https://stackoverflow.com/questions/56852812/simd-instructions-lowering-cpu-frequency]) and little performance benefits outside of very niche use cases. Even big compilers like GCC and Clang refuse to emit AVX-512 unless forced to do so.
+This is because AVX-512 has a lot of limitations ([SIMD instructions lowering CPU frequency](https://stackoverflow.com/questions/56852812/simd-instructions-lowering-cpu-frequency)) and little performance benefits outside of very niche use cases. Even big compilers like GCC and Clang refuse to emit AVX-512 unless forced to do so.
 
 AVX-512 addition is definitely a possibility though and I do have some ideas of how the syntax would work. `ymm(10, k1, z)` for example.
 
@@ -150,4 +150,4 @@ Chasm is dual licenced under the MIT Licence and Public Domain. You can choose t
 Thanks to
 ---------
 
-Very grateful to https://github.com/StanfordPL/x64asm for giving me the idea and inspiration to create this! I couldn't use their library from Windows or through C, so I took inspiration from what they did and wrote my library in C. I use their table to generate some of the code in (`asm_x64.c`)[asm_x64.c] and while I didn't take any code from them, I did take inspiration for how to do operands.
+Very grateful to https://github.com/StanfordPL/x64asm for giving me the idea and inspiration to create this! I couldn't use their library from Windows or through C, so I took inspiration from what they did and wrote my library in C. I use their table to generate some of the code in [`asm_x64.c`](asm_x64.c) and while I didn't take any code from them, I did take inspiration for how to do operands.
