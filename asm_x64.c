@@ -9870,9 +9870,6 @@ error:
   return NULL;
 }
 
-// Aligns to the next multiple of a, where a is a power of 2
-static inline u32 align(u32 n, u32 a) { return (n + a - 1) & ~(a - 1); }
-
 #if defined _WIN32 | defined __CYGWIN__
 
 // https://learn.microsoft.com/en-us/windows/win32/memory/memory-protection-constants
@@ -9880,10 +9877,15 @@ static inline u32 align(u32 n, u32 a) { return (n + a - 1) & ~(a - 1); }
 #define PAGE_READWRITE 0x4
 // https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc
 #define MEM_COMMIT 0x00001000
+// https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualfree
+#define MEM_RELEASE 0x8000
 
 __attribute((dllimport)) void* __attribute((stdcall)) VirtualAlloc(void* lpAddress, size_t dwSize, u32 flAllocationType, u32 flProtect);
 __attribute((dllimport)) int __attribute((stdcall)) VirtualProtect(void* lpAddress, size_t dwSize, u32 flNewProtect, u32* lpflOldProtect);
+__attribute((dllimport)) int __attribute((stdcall)) VirtualFree(void* lpAddress, size_t dwSize, u32 dwFreeType);
 
+// Aligns to the next multiple of a, where a is a power of 2
+static inline u32 align(u32 n, u32 a) { return (n + a - 1) & ~(a - 1); }
 void (*x64exec(void* mem, u32 size))() {
 	u32 pagesize = 4096;
 	u32 alignedsize = align(size, pagesize);
@@ -9904,18 +9906,11 @@ void x64exec_free(void* buf, u32 size) {
 #include <sys/mman.h>
 #include <unistd.h>
 
-void (*x64exec(void* mem, u32 size))() {
-	u32 pagesize = sysconf(_SC_PAGESIZE);
-	u32 alignedsize = align(size, pagesize);
-
-	// printf("Page size: %d\n", pagesize);
-	// printf("Original size: %d, new size: %d\n", size, alignedsize);
-
-	void* buf = mmap(NULL, alignedsize, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANON, -1, 0);
+void (*x64exec(void* mem, u32 size))() {\
+	void* buf = mmap(NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANON, -1, 0);
 	memcpy(buf, mem, size);
 
 	mprotect(buf, size, PROT_READ | PROT_EXEC);
-
 	return buf;
 }
 
