@@ -9155,7 +9155,6 @@ static const x64LookupGeneralIns x64Table[] = {
 
 
 /**
- * TODO: Add support for VEX and EVEX instructions.
  * TODO: Error messages for using a 32 bit register to address on a mem64 operand.
  * TODO: 32 Bit support?
  */
@@ -9725,23 +9724,13 @@ struct x64AssemblyRes {
   }* reloc;
 };
 
-So I just want to release this tech, I will hold off on label based linking and string storage.
-*/
-
-/**
-*things to note in readme*
-
-no labels for now
-use x64emit to emit single instructions
-highlight $riprel and rel()
-highlight that the mem() macro's scale only takes 1, 2, 4 or 8
-add disclaimer/issue that vsib for instructions like vgatherqpd cannot be stringified with the current method
+So I just want to release this tbh, I will hold off on label based linking and string storage.
 */
 
 u8* x64as(const x64 p, u32 num, u32* len) {
   u32 code_size = num * 15;// 15 is the maximum size of 1 instruction. Example: lwpval rax, cs:[rax+rbx*8+0x23829382], 100000000
   u32 indexes_size = num * sizeof(u16);
-  u32 relref_size = num * sizeof(struct x64_relative); // THIS SHOULD BE ENOUGH IN MOST CASES
+  u32 relref_size = num * sizeof(struct x64_relative);
 
   u8 *const encoding_arena = calloc(code_size + indexes_size + relref_size, 1);
   u8 *const code = encoding_arena;
@@ -9774,7 +9763,6 @@ u8* x64as(const x64 p, u32 num, u32* len) {
         if(insns == 1) offset = 0;
         else if (insns == 0) offset = -curlen;
         else offset = indexes[index + insns] - curlen;
-
 
         // JCC size is either 2, 3, 5 or 6 with 0f prefixes
         if(curlen > 4) { // DOWNSIZE IF INSTRUCTION IS TOO BIG

@@ -49,8 +49,7 @@ enum x64OperandType: uint64_t {
 	CR0_7 = 0x400000000000, CR8 = 0x800000000000,
 	DREG = 0x1000000000000,
 	
-	ONE = 0x2000000000000 // EXACTLY ENOUGH TO FIT IN A 64-BIT INTEGER LETS FUCKING GO
-	// 2 bytes + 2 bits for extra things that can't fit in `value`, like segment registers 😈
+	ONE = 0x2000000000000
 };
 typedef enum x64OperandType x64OperandType;
 
@@ -116,7 +115,7 @@ typedef struct x64LookupGeneralIns x64LookupGeneralIns;
 #define im32(value) (x64Operand) { ((value) == 1 ? ONE : 0) | IMM32, (value) }
 #define im16(value) (x64Operand) { ((value) == 1 ? ONE : 0) | IMM16, (value) }
 #define im8(value) (x64Operand) { ((value) == 1 ? ONE : 0) | IMM8, (value) }
-#define imfn(value) (x64Operand) { IMM64, (uint64_t)(void*)(value) }
+#define imptr(value) (x64Operand) { IMM64, (uint64_t)(void*)(value) }
 
 #define al (x64Operand) { AL | R8 }
 #define cl (x64Operand) { CL | R8, 1 }
