@@ -1,5 +1,5 @@
 /*
- * vec.h v1.0.0 - Aqil Contractor @AqilC 2023
+ * vec.h v1.0.0 - Aqil Contractor @aqilc 2025
  * Licenced under Attribution-NonCommercial-ShareAlike 3.0
  *
  * This file includes all of the source for the Vector library macros and functions.

@@ -45,7 +45,8 @@ This library is useful for any code generated dynamically from user input. This 
 - JIT Compilers
 - Emulators
 - Runtime optimizations / code generation
-- Testing/benchmarking software
+- Testing / benchmarking software
+- Writing your own assemblers!
 
 Performance
 -----------
@@ -96,11 +97,11 @@ Other valid `mem()` syntax examples are: `mem($rax)`, `mem($none, 0, $rdx, 8)` a
 ```c
 x64 code = {
   { LEA, rcx, mem($riprel, 3) }, // ━┓
-  { PUSH, rcx },                 //  ┃ This pushes that address on the stack.
-  { XOR, rcx, rcx },             //  ┃
-  { DEC, rax },                  // ◄┛
-  { JZ, rel(2) }, // Jumps out of the loop.
-  { RET } // Pops the previously pushed pointer off and goes to it, basically JMP, rel(-2)
+  { PUSH, rcx                 }, //  ┃ Pushes this address on the stack.
+  { XOR, rcx, rcx             }, //  ┃
+  { DEC, rax                  }, // ◄┛
+  { JZ, rel(2)                }, // Jumps out of the loop.
+  { RET                       } // Pops the previously pushed pointer off and goes to it, basically JMP, rel(-2)
 };
 ```
 
@@ -130,12 +131,15 @@ Example of such loop:
 ```c
 char buf[128];
 uint32_t buf_len = 0;
+
 for(size_t i = 0; i < sizeof(code) / sizeof(code[0]); i++) {
   const uint32_t len = x64emit(&code[i], buf + buf_len);
+  
   if(!len) { // Or any other kind of error handling code. This is what x64as() does internally.
     fprintf(stderr, "%s", x64error(NULL));
     return 1;
   }
+  
   buf_len += len;
 }
 ```

@@ -1,6 +1,6 @@
 /*
- * asm_x64.c v1.0.0 - Aqil Contractor @AqilC 2023
- * Licenced under Attribution-NonCommercial-ShareAlike 3.0
+ * asm_x64.c v1.1.0 - Aqil Contractor @aqilc 2025
+ * Dual Licenced under MIT and Public Domain.
  *
  * This file includes all of the source for the "chasm" library macros and functions.
  */
