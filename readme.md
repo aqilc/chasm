@@ -3,9 +3,6 @@
   <p>Easy to use, extremely fast Runtime Assembler.</p>
 </div>
 
-Usage
------
-
 ```c
 #include <stdio.h>
 #include "lib/asm/asm_x64.h"
@@ -26,8 +23,9 @@ int main() {
 	return 0;
 }
 ```
+#### Usage
 
-Download [`asm_x64.c`](asm_x64.c) and [`asm_x64.h`](asm_x64.h) into your project and just include [`asm_x64.h`](asm_x64.h) to start assembling!
+> Download [`asm_x64.c`](asm_x64.c) and [`asm_x64.h`](asm_x64.h) into your project and just include [`asm_x64.h`](asm_x64.h) to start assembling!
 
 Features
 --------
@@ -75,6 +73,7 @@ Notice the use of `rax` and `imm(0)`. All x86 registers like `rax` (including `m
 - `imm()`, `im8()`, `im16`, `im32()`, `im64()` and `imfn()` for immediate values.
 - `mem()`, `m8()`, `m16()`, `m32()`, `m64()`, `m128()`, `m256()` and `m512()` for memory addresses.
 - `rel()` for relative addresses referencing other instructions. The use of this macro requires soft linking if used to reference other instructions.
+  - **Note:** `rel(0)` references the current instruction, so `JMP, rel(0)` jumps back to itself infinitely! If you need to go to the next instruction, pass in 1.
 
 #### `mem()` and `m<size>()` syntax.
 
@@ -88,7 +87,27 @@ x64 code = { LEA, rax, mem($rax, 0x0ffe, $rdx, 2, $ds) };
 
 This is a **variable** length macro, with each argument being optional. Each of the **register** arguments of the `mem()` macro have to be preceeded with a `$` prefix. Any 32 bit signed integer can be passed for the offset parameter, and only 1, 2, 4 and 8 are allowed in the 4th parameter, also called the "scale" parameter (**ANY OTHER VALUE WILL GO TO 1**, x86 limitation). The last parameter is a segment register, also preceeded with a `$`. **Make sure to pass in $none for register parameters you are not using, as it will assume eax otherwise**
 
-Other valid `mem()` syntax examples are: `mem($rax)`, `mem($none, 0, $rdx, 8)`, `mem()` and with VSIB `mem($rdx, 0, $ymm2, 4)`.
+Other valid `mem()` syntax examples are: `mem($rax)`, `mem($none, 0, $rdx, 8)` and with VSIB `mem($rdx, 0, $ymm2, 4)`.
+
+#### `mem($riprel)`
+
+`$rip` is a valid register to use with `mem()`, but it's not very useful when you might not know the byte-length of the instructions in between the ones you're trying to reference. This is where `$riprel` can be used as the base register for `mem()` allowing you to reference other instructions without knowing the byte-length in between! In `$riprel`, just like `rel()`, 0 means the current instruction. This is the answer to `lea rax, [$+1]` syntax provided by many assemblers. Here's an example:
+
+```c
+x64 code = {
+  { LEA, rcx, mem($riprel, 3) }, // ━┓
+  { PUSH, rcx },                 //  ┃ This pushes that address on the stack.
+  { XOR, rcx, rcx },             //  ┃
+  { DEC, rax },                  // ◄┛
+  { JZ, rel(2) }, // Jumps out of the loop.
+  { RET } // Pops the previously pushed pointer off and goes to it, basically JMP, rel(-2)
+};
+```
+
+There's also an example in [`examples/bf_compiler.c`](examples/bf_compiler.c).
+
+> [!Important]
+> To get actual results with this syntax, you need to link your code with `x64as()`! Index and scale also do not work with `$rip` or `$riprel` as base registers.
 
 ### Functions
 
