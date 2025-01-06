@@ -151,6 +151,9 @@ for(size_t i = 0; i < sizeof(code) / sizeof(code[0]); i++) {
 
 #### Frees memory allocated by `x64exec()`.
 
+> [!note]
+> Store the size of the memory you requested with `x64exec()` as you will need to pass it in here, at least for Unix.
+
 #### <pre lang="c">char* x64stringify(const x64 p, uint32_t num);</pre>
 
 #### Stringifies the IR. Useful for debugging and inspecting it.
