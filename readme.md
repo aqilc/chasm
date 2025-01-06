@@ -113,11 +113,17 @@ There's also an example in [`examples/bf_compiler.c`](examples/bf_compiler.c).
 
 #### <pre lang="c">uint8_t* x64as(x64 code, size_t len, uint32_t* outlen)</pre>
 
-Assembles and soft links code, dealing with \$riprel and rel() syntax and returning the assembled code. Returns NULL if an error occured, and sets the error code to the `x64error` variable. The length of the assembled code is stored in `outlen`.
+#### Assembles and soft links code, dealing with `$riprel` and `rel()` syntax and returning the assembled code.
+
+- Returns NULL if an error occured, and sets the error code to the `x64error` variable.
+- The length of the assembled code is stored in `outlen`.
 
 #### <pre lang="c">uint32_t x64emit(const x64Ins* ins, uint8_t* opcode_dest);</pre>
 
-Assembles a single instruction and stores it in `opcode_dest`. Returns the length of the instruction in bytes. If it returns 0, an error has occurred. This function does not perform any linking, so it's likely much faster to loop with this function than to use x64as() if you do not have any `rel()` or `mem($riprel)`s in your code.
+#### Assembles a single instruction and stores it in `opcode_dest`.
+
+- Returns the length of the instruction in bytes. If it returns 0, an error has occurred.
+- This function does not perform any linking, so it's likely much faster to loop with this function than to use x64as() if you do not have any `rel()` or `mem($riprel)`s in your code.
 
 Example of such loop:
 
@@ -136,19 +142,28 @@ for(size_t i = 0; i < sizeof(code) / sizeof(code[0]); i++) {
 
 #### <pre lang="c">void (*x64exec(void* mem, uint32_t size))();</pre>
 
-Uses a Syscall to allocate memory with the EXecute bit set, so you can execute your code. Returns a function pointer to the code, which you can call to run your code. Free this memory with `x64exec_free()`.
+#### Uses a Syscall to allocate memory with the EXecute bit set, so you can execute your code.
+
+- Returns a function pointer to the code, which you can call to run your code.
+  - Free this memory with `x64exec_free()`.
 
 #### <pre lang="c">void x64exec_free(void* mem, uint32_t size);</pre>
 
-Frees memory allocated by `x64exec()`.
+#### Frees memory allocated by `x64exec()`.
 
 #### <pre lang="c">char* x64stringify(const x64 p, uint32_t num);</pre>
 
-Returns a string representation of the IR, useful for debugging and inspecting it.
+#### Stringifies the IR. Useful for debugging and inspecting it.
+
+- Returns a string, NULL if an error occurred which will be accessible with `x64error()`.
 
 #### <pre lang="c">char* x64error(int* errcode);</pre>
 
-Gets the error message of the last error that occured. If `errcode` is not NULL, it will be set to the error code.
+#### Gets the error message of the last error that occured.
+
+- Returns a string with a description of the error.
+- If `errcode` is not NULL, it will be set to the error code.
+
 
 Limitations
 -----------
