@@ -60,7 +60,7 @@ In the above screenshot, it's shown that an optimized build can assemble most in
 API
 ---
 
-## Code
+### Code
 
 `x64` is an array of `x64Ins` structs. The first member of the struct is `op`, or the operation, an enum defined by the **[`asm_x64.h`](asm_x64.h)** header. The other 4 members are `x64Operand` structs, which are just a combination of the type of operand with the value.
 
@@ -76,7 +76,7 @@ Notice the use of `rax` and `imm(0)`. All x86 registers like `rax` (including `m
 - `mem()`, `m8()`, `m16()`, `m32()`, `m64()`, `m128()`, `m256()` and `m512()` for memory addresses.
 - `rel()` for relative addresses referencing other instructions. The use of this macro requires soft linking if used to reference other instructions.
 
-### `mem()` and `m<size>()` syntax.
+#### `mem()` and `m<size>()` syntax.
 
 > `m8()`, `m16()`, `m32()`, `m64()`, `m128()`, `m256()` and `m512()` are more specific versions of the `mem()` macro, which references any and every size of memory for ease of use. Generally, if you know the size of memory accessed, use the size specific version of the macro that matches with the bit width of the other operands. All of these macros have the same syntax.
 
@@ -90,13 +90,13 @@ This is a **variable** length macro, with each argument being optional. Each of 
 
 Other valid `mem()` syntax examples are: `mem($rax)`, `mem($none, 0, $rdx, 8)`, `mem()` and with VSIB `mem($rdx, 0, $ymm2, 4)`.
 
-## Functions
+### Functions
 
-### <pre lang="c">uint8_t* x64as(x64 code, size_t len, uint32_t* outlen)</pre>
+#### <pre lang="c">uint8_t* x64as(x64 code, size_t len, uint32_t* outlen)</pre>
 
 Assembles and soft links code, dealing with \$riprel and rel() syntax and returning the assembled code. Returns NULL if an error occured, and sets the error code to the `x64error` variable. The length of the assembled code is stored in `outlen`.
 
-### <pre lang="c">uint32_t x64emit(const x64Ins* ins, uint8_t* opcode_dest);</pre>
+#### <pre lang="c">uint32_t x64emit(const x64Ins* ins, uint8_t* opcode_dest);</pre>
 
 Assembles a single instruction and stores it in `opcode_dest`. Returns the length of the instruction in bytes. If it returns 0, an error has occurred. This function does not perform any linking, so it's likely much faster to loop with this function than to use x64as() if you do not have any `rel()` or `mem($riprel)`s in your code.
 
@@ -115,19 +115,19 @@ for(size_t i = 0; i < sizeof(code) / sizeof(code[0]); i++) {
 }
 ```
 
-### <pre lang="c">void (*x64exec(void* mem, uint32_t size))();</pre>
+#### <pre lang="c">void (*x64exec(void* mem, uint32_t size))();</pre>
 
 Uses a Syscall to allocate memory with the EXecute bit set, so you can execute your code. Returns a function pointer to the code, which you can call to run your code. Free this memory with `x64exec_free()`.
 
-### <pre lang="c">void x64exec_free(void* mem, uint32_t size);</pre>
+#### <pre lang="c">void x64exec_free(void* mem, uint32_t size);</pre>
 
 Frees memory allocated by `x64exec()`.
 
-### <pre lang="c">char* x64stringify(const x64 p, uint32_t num);</pre>
+#### <pre lang="c">char* x64stringify(const x64 p, uint32_t num);</pre>
 
 Returns a string representation of the IR, useful for debugging and inspecting it.
 
-### <pre lang="c">char* x64error(int* errcode);</pre>
+#### <pre lang="c">char* x64error(int* errcode);</pre>
 
 Gets the error message of the last error that occured. If `errcode` is not NULL, it will be set to the error code.
 
