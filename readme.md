@@ -10,8 +10,8 @@
 int main() {
 	char* str = "Hello World!";
 	x64 code = {
-		{ MOV, rax, imfn(puts) },
-		{ MOV, rcx, imfn(str) }, // RDI for System V
+		{ MOV, rax, imptr(puts) },
+		{ MOV, rcx, imptr(str) }, // RDI for System V
 		{ JMP, rax },
 	};
 	
@@ -34,8 +34,8 @@ Features
 - Supports AVX-256 and many other x86 extensions.
 - Fast, assembling up to 100 million instructions per second.
 - Easy and flexible syntax, allowing you as much freedom as possible with coding practices.
-- Simple error handling system, returning 0 from a function if it failed and fast error retrieval with `x64error(NULL)`;
-- Stringification of the IR for easy debugging with `x64stringify(code, len)`;
+- Simple error handling system, returning 0 from a function if it failed and fast error retrieval with `x64error(NULL)`.
+- Stringification of the IR for easy debugging with `x64stringify(code, len)`.
 
 Use Cases
 ---------
@@ -70,10 +70,10 @@ x64 code = { MOV, rax, imm(0) };
 
 Notice the use of `rax` and `imm(0)`. All x86 registers like `rax` (including `mm`s, `ymm`s etc) are defined as macros with the type `x64Operand`. Other types of macros:
 
-- `imm()`, `im8()`, `im16`, `im32()`, `im64()` and `imfn()` for immediate values.
+- `imm()`, `im8()`, `im16`, `im32()`, `im64()` and `imptr()` for immediate values.
 - `mem()`, `m8()`, `m16()`, `m32()`, `m64()`, `m128()`, `m256()` and `m512()` for memory addresses.
-- `rel()` for relative addresses referencing other instructions. The use of this macro requires soft linking if used to reference other instructions.
-  - **Note:** `rel(0)` references the current instruction, so `JMP, rel(0)` jumps back to itself infinitely! If you need to go to the next instruction, pass in 1.
+- `rel()` for relative offsets referencing other instructions. The use of this macro requires soft linking if used that way.
+  - **Note:** `rel(0)` references the current instruction, so `JMP, rel(0)` jumps back to itself infinitely! Pass in 1 to jump to the next instruction.
 
 #### `mem()` and `m<size>()` syntax.
 
@@ -111,7 +111,7 @@ There's also an example in [`examples/bf_compiler.c`](examples/bf_compiler.c).
 
 ### Functions
 
-#### <pre lang="c">uint8_t* x64as(x64 code, size_t len, uint32_t* outlen)</pre>
+#### <pre lang="c">uint8_t* x64as(x64 code, size_t len, uint32_t* outlen);</pre>
 
 #### Assembles and soft links code, dealing with `$riprel` and `rel()` syntax and returning the assembled code.
 
@@ -182,7 +182,7 @@ AVX-512 addition is definitely a possibility though and I do have some ideas of 
 License
 -------
 
-Chasm is dual licenced under the MIT Licence and Public Domain. You can choose the licence that suits your project the best. The MIT Licence is a permissive licence that is short and to the point. The Public Domain licence is a licence that makes the software available to the public for free and with no copyright.
+Chasm is dual licensed under the MIT Licence and Public Domain. You can choose the licence that suits your project the best. The MIT Licence is a permissive licence that is short and to the point. The Public Domain licence is a licence that makes the software available to the public for free and with no copyright.
 
 Thanks to
 ---------

@@ -4,8 +4,8 @@
 int main() {
 	char* str = "Hello World!";
 	x64 code = {
-		{ MOV, rax, imfn(puts) },
-		{ MOV, rcx, imfn(str) },
+		{ MOV, rax, imptr(puts) },
+		{ MOV, rcx, imptr(str) },
 		{ JMP, rax },
 	};
 	

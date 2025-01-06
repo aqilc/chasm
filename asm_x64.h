@@ -117,7 +117,7 @@ typedef struct x64LookupGeneralIns x64LookupGeneralIns;
 #define im32(value) (x64Operand) { ((value) == 1 ? ONE : 0) | IMM32, (value) }
 #define im16(value) (x64Operand) { ((value) == 1 ? ONE : 0) | IMM16, (value) }
 #define im8(value) (x64Operand) { ((value) == 1 ? ONE : 0) | IMM8, (value) }
-#define imfn(value) (x64Operand) { IMM64, (uint64_t)(void*)(value) }
+#define imptr(value) (x64Operand) { IMM64, (uint64_t)(void*)(value) }
 
 #define al (x64Operand) { AL | R8 }
 #define cl (x64Operand) { CL | R8, 1 }
