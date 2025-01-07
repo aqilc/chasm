@@ -24,13 +24,42 @@ typedef uint32_t u32;
 typedef uint64_t u64;
 
 
+struct x64LookupGeneralIns {
+	char* name;
+	unsigned int numactualins;
+	struct x64LookupActualIns {
+		uint8_t mem_oper; // Index of memory operand if there is one + 1
+		uint8_t reg_oper; // Index of register operand if there is one + 1
+		uint8_t rel_oper; // Index of relative jump operand if there is one + 1
+		uint8_t vex_oper; // Index of VEX operand if there is one + 1
+    uint8_t imm_oper; // Index of immediate operand if there is one + 1
+    uint8_t is4_oper; // Index of 4-byte immediate operand if there is one + 1
+		uint8_t rex;
+		uint8_t oplen;
+		uint8_t preflen;
+		uint8_t vex; // opcode_map if specified
+		uint8_t vex_byte;
+    uint8_t modrm;
+		bool modrmreq;
+		bool modrmreg;
+		bool preffered;
+		uint8_t base_size;
+		uint8_t arglen;
+		uint32_t opcode;
+		uint32_t prefixes;
+		x64OperandType args[4];
+	}* ins;
+};
+typedef struct x64LookupActualIns x64LookupActualIns;
+typedef struct x64LookupGeneralIns x64LookupGeneralIns;
+
 static const x64LookupGeneralIns x64Table[] = {
 	{ "adc", 21, (struct x64LookupActualIns[]) { {
 		.args = { AL, IMM8 }, .arglen = 2, .imm_oper = 2,
 		.opcode = 0x14, .oplen = 1,
 	}, {
 		.args = { AX, IMM16 }, .arglen = 2, .imm_oper = 2,
-		.prefixes = 0x66, .opcode = 0x15, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x15, .oplen = 1,
 	}, {
 		.args = { EAX, IMM32 }, .arglen = 2, .imm_oper = 2,
 		.opcode = 0x15, .oplen = 1,
@@ -45,7 +74,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x10,
 		.args = { R16 | M16, IMM16 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0x81, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x81, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrm = 0x10,
 		.args = { R32 | M32, IMM32 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
@@ -82,7 +111,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16 | M16, R16 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x11, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x11, .oplen = 1,
 		.preffered = true,
 	}, {
 		.modrmreq = true, .modrmreg = true,
@@ -105,7 +134,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x13, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x13, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -120,7 +149,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0x04, .oplen = 1,
 	}, {
 		.args = { AX, IMM16 }, .arglen = 2, .imm_oper = 2,
-		.prefixes = 0x66, .opcode = 0x05, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x05, .oplen = 1,
 	}, {
 		.args = { EAX, IMM32 }, .arglen = 2, .imm_oper = 2,
 		.opcode = 0x05, .oplen = 1,
@@ -135,7 +164,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x0,
 		.args = { R16 | M16, IMM16 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0x81, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x81, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrm = 0x0,
 		.args = { R32 | M32, IMM32 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
@@ -172,7 +201,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16 | M16, R16 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x01, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x01, .oplen = 1,
 		.preffered = true,
 	}, {
 		.modrmreq = true, .modrmreg = true,
@@ -195,7 +224,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x03, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x03, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -208,7 +237,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "addpd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x580F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x580F, .oplen = 2,
 	} } },
 	{ "vaddpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -236,7 +265,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "addsd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0x580F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0x580F, .oplen = 2,
 	} } },
 	{ "vaddsd", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7b, .modrmreq = true, .modrmreg = true,
@@ -246,7 +275,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "addss", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x580F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x580F, .oplen = 2,
 	} } },
 	{ "vaddss", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7a, .modrmreq = true, .modrmreg = true,
@@ -256,7 +285,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "addsubpd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xD00F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xD00F, .oplen = 2,
 	} } },
 	{ "vaddsubpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -270,7 +299,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "addsubps", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0xD00F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0xD00F, .oplen = 2,
 	} } },
 	{ "vaddsubps", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7b, .modrmreq = true, .modrmreg = true,
@@ -284,7 +313,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "aesdec", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDE380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDE380F, .oplen = 3,
 	} } },
 	{ "vaesdec", 1, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -294,7 +323,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "aesdeclast", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDF380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDF380F, .oplen = 3,
 	} } },
 	{ "vaesdeclast", 1, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -304,7 +333,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "aesenc", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDC380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDC380F, .oplen = 3,
 	} } },
 	{ "vaesenc", 1, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -314,7 +343,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "aesenclast", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDD380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDD380F, .oplen = 3,
 	} } },
 	{ "vaesenclast", 1, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -324,7 +353,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "aesimc", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDB380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDB380F, .oplen = 3,
 	} } },
 	{ "vaesimc", 1, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -334,7 +363,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "aeskeygenassist", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDF3A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDF3A0F, .oplen = 3,
 	} } },
 	{ "vaeskeygenassist", 1, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -346,7 +375,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0x24, .oplen = 1,
 	}, {
 		.args = { AX, IMM16 }, .arglen = 2, .imm_oper = 2,
-		.prefixes = 0x66, .opcode = 0x25, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x25, .oplen = 1,
 	}, {
 		.args = { EAX, IMM32 }, .arglen = 2, .imm_oper = 2,
 		.opcode = 0x25, .oplen = 1,
@@ -361,7 +390,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x20,
 		.args = { R16 | M16, IMM16 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0x81, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x81, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrm = 0x20,
 		.args = { R32 | M32, IMM32 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
@@ -398,7 +427,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16 | M16, R16 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x21, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x21, .oplen = 1,
 		.preffered = true,
 	}, {
 		.modrmreq = true, .modrmreg = true,
@@ -421,7 +450,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x23, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x23, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -443,7 +472,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "andpd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x540F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x540F, .oplen = 2,
 	} } },
 	{ "vandpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -471,7 +500,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "andnpd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x550F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x550F, .oplen = 2,
 	} } },
 	{ "vandnpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -499,7 +528,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "blendpd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x0D3A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x0D3A0F, .oplen = 3,
 	} } },
 	{ "vblendpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -522,7 +551,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "blendps", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x0C3A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x0C3A0F, .oplen = 3,
 	} } },
 	{ "vblendps", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -536,7 +565,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "blendvpd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128, XMM_0 }, .arglen = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x15380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x15380F, .oplen = 3,
 	} } },
 	{ "vblendvpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -550,7 +579,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "blendvps", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128, XMM_0 }, .arglen = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x14380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x14380F, .oplen = 3,
 	} } },
 	{ "vblendvps", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -591,7 +620,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "bsf", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xBC0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xBC0F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -604,7 +633,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "bsr", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xBD0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xBD0F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -624,7 +653,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	} } },
 	{ "bt", 6, (struct x64LookupActualIns[]) { {
 		.args = { R16 | M16, R16 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0xA30F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xA30F, .oplen = 2,
 	}, {
 		.args = { R32 | M32, R32 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
 		.opcode = 0xA30F, .oplen = 2,
@@ -647,7 +676,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	} } },
 	{ "btc", 6, (struct x64LookupActualIns[]) { {
 		.args = { R16 | M16, R16 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0xBB0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xBB0F, .oplen = 2,
 	}, {
 		.args = { R32 | M32, R32 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
 		.opcode = 0xBB0F, .oplen = 2,
@@ -670,7 +699,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	} } },
 	{ "btr", 6, (struct x64LookupActualIns[]) { {
 		.args = { R16 | M16, R16 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0xB30F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xB30F, .oplen = 2,
 	}, {
 		.args = { R32 | M32, R32 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
 		.opcode = 0xB30F, .oplen = 2,
@@ -693,7 +722,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	} } },
 	{ "bts", 6, (struct x64LookupActualIns[]) { {
 		.args = { R16 | M16, R16 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0xAB0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xAB0F, .oplen = 2,
 	}, {
 		.args = { R32 | M32, R32 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
 		.opcode = 0xAB0F, .oplen = 2,
@@ -744,7 +773,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0xFF, .oplen = 1,
 	} } },
 	{ "cbw", 1, (struct x64LookupActualIns[]) { {
-		.prefixes = 0x66, .opcode = 0x98, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x98, .oplen = 1,
 	} } },
 	{ "cwde", 1, (struct x64LookupActualIns[]) { {
 		.opcode = 0x98, .oplen = 1,
@@ -776,7 +805,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmova", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x470F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x470F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -789,7 +818,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovae", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x430F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x430F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -802,7 +831,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovb", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x420F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x420F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -815,7 +844,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovbe", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x460F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x460F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -828,7 +857,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovc", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x420F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x420F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -841,7 +870,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmove", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x440F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x440F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -854,7 +883,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovg", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x4F0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x4F0F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -867,7 +896,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovge", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x4D0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x4D0F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -880,7 +909,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovl", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x4C0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x4C0F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -893,7 +922,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovle", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x4E0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x4E0F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -906,7 +935,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovna", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x460F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x460F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -919,7 +948,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovnae", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x420F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x420F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -932,7 +961,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovnb", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x430F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x430F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -945,7 +974,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovnbe", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x470F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x470F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -958,7 +987,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovnc", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x430F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x430F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -971,7 +1000,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovne", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x450F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x450F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -984,7 +1013,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovng", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x4E0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x4E0F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -997,7 +1026,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovnge", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x4C0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x4C0F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -1010,7 +1039,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovnl", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x4D0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x4D0F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -1023,7 +1052,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovnle", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x4F0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x4F0F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -1036,7 +1065,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovno", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x410F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x410F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -1049,7 +1078,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovnp", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x4B0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x4B0F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -1062,7 +1091,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovns", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x490F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x490F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -1075,7 +1104,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovnz", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x450F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x450F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -1088,7 +1117,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovo", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x400F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x400F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -1101,7 +1130,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovp", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x4A0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x4A0F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -1114,7 +1143,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovpe", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x4A0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x4A0F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -1127,7 +1156,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovpo", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x4B0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x4B0F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -1140,7 +1169,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovs", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x480F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x480F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -1153,7 +1182,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmovz", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x440F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x440F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -1168,7 +1197,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0x3C, .oplen = 1,
 	}, {
 		.args = { AX, IMM16 }, .arglen = 2, .imm_oper = 2,
-		.prefixes = 0x66, .opcode = 0x3D, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x3D, .oplen = 1,
 	}, {
 		.args = { EAX, IMM32 }, .arglen = 2, .imm_oper = 2,
 		.opcode = 0x3D, .oplen = 1,
@@ -1183,7 +1212,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x38,
 		.args = { R16 | M16, IMM16 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0x81, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x81, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrm = 0x38,
 		.args = { R32 | M32, IMM32 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
@@ -1220,7 +1249,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16 | M16, R16 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x39, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x39, .oplen = 1,
 		.preffered = true,
 	}, {
 		.modrmreq = true, .modrmreg = true,
@@ -1243,7 +1272,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x3B, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x3B, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -1256,7 +1285,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmppd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xC20F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xC20F, .oplen = 2,
 	} } },
 	{ "vcmppd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -1286,7 +1315,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0xA6, .oplen = 1,
 	}, {
 		.args = { M16, M16 }, .arglen = 2,
-		.prefixes = 0x66, .opcode = 0xA7, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xA7, .oplen = 1,
 	}, {
 		.args = { M32, M32 }, .arglen = 2,
 		.opcode = 0xA7, .oplen = 1,
@@ -1299,14 +1328,14 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0xA6, .oplen = 1,
 	} } },
 	{ "cmpsw", 1, (struct x64LookupActualIns[]) { {
-		.prefixes = 0x66, .opcode = 0xA7, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xA7, .oplen = 1,
 	} } },
 	{ "cmpsd", 2, (struct x64LookupActualIns[]) { {
 		.opcode = 0xA7, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M64, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0xC20F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0xC20F, .oplen = 2,
 	} } },
 	{ "cmpsq", 1, (struct x64LookupActualIns[]) { {
 		.rex = 0x48,
@@ -1320,7 +1349,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cmpss", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M32, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0xC20F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xC20F, .oplen = 2,
 	} } },
 	{ "vcmpss", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7a, .modrmreq = true, .modrmreg = true,
@@ -1338,7 +1367,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16 | M16, R16 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0xB10F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xB10F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32 | M32, R32 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
@@ -1361,7 +1390,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "comisd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x2F0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x2F0F, .oplen = 2,
 	} } },
 	{ "vcomisd", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -1384,27 +1413,27 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "crc32", 5, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R8 | M8 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0xF0380F, .oplen = 3,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0xF0380F, .oplen = 3,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0xF1380F, .oplen = 3,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0xF1380F, .oplen = 3,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0xF1380F, .oplen = 3,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0xF1380F, .oplen = 3,
 	}, {
 		.rex = 0x48, .modrmreq = true, .modrmreg = true,
 		.args = { R64, R8 | M8 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0xF0380F, .oplen = 3,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0xF0380F, .oplen = 3,
 	}, {
 		.rex = 0x48, .modrmreq = true, .modrmreg = true,
 		.args = { R64, R64 | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0xF1380F, .oplen = 3,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0xF1380F, .oplen = 3,
 	} } },
 	{ "cvtdq2pd", 1, (struct x64LookupActualIns[]) { {
 		.args = { XMM, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0xE60F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xE60F, .oplen = 2,
 	} } },
 	{ "vcvtdq2pd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7a, .modrmreq = true, .modrmreg = true,
@@ -1431,7 +1460,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	} } },
 	{ "cvtpd2dq", 1, (struct x64LookupActualIns[]) { {
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0xE60F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0xE60F, .oplen = 2,
 	} } },
 	{ "vcvtpd2dq", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7b, .modrmreq = true, .modrmreg = true,
@@ -1445,12 +1474,12 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cvtpd2pi", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { MM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x2D0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x2D0F, .oplen = 2,
 	} } },
 	{ "cvtpd2ps", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x5A0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x5A0F, .oplen = 2,
 	} } },
 	{ "vcvtpd2ps", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -1464,7 +1493,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cvtpi2pd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, MM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x2A0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x2A0F, .oplen = 2,
 	} } },
 	{ "cvtpi2ps", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -1474,7 +1503,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cvtps2dq", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x5B0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x5B0F, .oplen = 2,
 	} } },
 	{ "vcvtps2dq", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -1507,11 +1536,11 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cvtsd2si", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0x2D0F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0x2D0F, .oplen = 2,
 	}, {
 		.rex = 0x48, .modrmreq = true, .modrmreg = true,
 		.args = { R64, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0x2D0F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0x2D0F, .oplen = 2,
 	} } },
 	{ "vcvtsd2si", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7b, .modrmreq = true, .modrmreg = true,
@@ -1525,7 +1554,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cvtsd2ss", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0x5A0F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0x5A0F, .oplen = 2,
 	} } },
 	{ "vcvtsd2ss", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7b, .modrmreq = true, .modrmreg = true,
@@ -1535,11 +1564,11 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cvtsi2sd", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0x2A0F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0x2A0F, .oplen = 2,
 	}, {
 		.rex = 0x48, .modrmreq = true, .modrmreg = true,
 		.args = { XMM, R64 | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0x2A0F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0x2A0F, .oplen = 2,
 	} } },
 	{ "vcvtsi2sd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7b, .modrmreq = true, .modrmreg = true,
@@ -1553,11 +1582,11 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cvtsi2ss", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x2A0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x2A0F, .oplen = 2,
 	}, {
 		.rex = 0x48, .modrmreq = true, .modrmreg = true,
 		.args = { XMM, R64 | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x2A0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x2A0F, .oplen = 2,
 	} } },
 	{ "vcvtsi2ss", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7a, .modrmreq = true, .modrmreg = true,
@@ -1571,7 +1600,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cvtss2sd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x5A0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x5A0F, .oplen = 2,
 	} } },
 	{ "vcvtss2sd", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7a, .modrmreq = true, .modrmreg = true,
@@ -1581,11 +1610,11 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cvtss2si", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, XMM | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x2D0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x2D0F, .oplen = 2,
 	}, {
 		.rex = 0x48, .modrmreq = true, .modrmreg = true,
 		.args = { R64, XMM | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x2D0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x2D0F, .oplen = 2,
 	} } },
 	{ "vcvtss2si", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7a, .modrmreq = true, .modrmreg = true,
@@ -1598,7 +1627,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	} } },
 	{ "cvttpd2dq", 1, (struct x64LookupActualIns[]) { {
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xE60F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xE60F, .oplen = 2,
 	} } },
 	{ "vcvttpd2dq", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -1612,12 +1641,12 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cvttpd2pi", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { MM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x2C0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x2C0F, .oplen = 2,
 	} } },
 	{ "cvttps2dq", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x5B0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x5B0F, .oplen = 2,
 	} } },
 	{ "vcvttps2dq", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7a, .modrmreq = true, .modrmreg = true,
@@ -1636,11 +1665,11 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cvttsd2si", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0x2C0F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0x2C0F, .oplen = 2,
 	}, {
 		.rex = 0x48, .modrmreq = true, .modrmreg = true,
 		.args = { R64, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0x2C0F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0x2C0F, .oplen = 2,
 	} } },
 	{ "vcvttsd2si", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7b, .modrmreq = true, .modrmreg = true,
@@ -1654,11 +1683,11 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "cvttss2si", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, XMM | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x2C0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x2C0F, .oplen = 2,
 	}, {
 		.rex = 0x48, .modrmreq = true, .modrmreg = true,
 		.args = { R64, XMM | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x2C0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x2C0F, .oplen = 2,
 	} } },
 	{ "vcvttss2si", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7a, .modrmreq = true, .modrmreg = true,
@@ -1670,7 +1699,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0x2C, .oplen = 1,
 	} } },
 	{ "cwd", 1, (struct x64LookupActualIns[]) { {
-		.prefixes = 0x66, .opcode = 0x99, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x99, .oplen = 1,
 	} } },
 	{ "cdq", 1, (struct x64LookupActualIns[]) { {
 		.opcode = 0x99, .oplen = 1,
@@ -1716,7 +1745,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "divpd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x5E0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x5E0F, .oplen = 2,
 	} } },
 	{ "vdivpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -1744,7 +1773,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "divsd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0x5E0F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0x5E0F, .oplen = 2,
 	} } },
 	{ "vdivsd", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7b, .modrmreq = true, .modrmreg = true,
@@ -1754,7 +1783,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "divss", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x5E0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x5E0F, .oplen = 2,
 	} } },
 	{ "vdivss", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7a, .modrmreq = true, .modrmreg = true,
@@ -1764,7 +1793,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "dppd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x413A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x413A0F, .oplen = 3,
 	} } },
 	{ "vdppd", 1, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -1774,7 +1803,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "dpps", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x403A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x403A0F, .oplen = 3,
 	} } },
 	{ "vdpps", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -1795,7 +1824,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "extractps", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R64 | R32 | M32, XMM, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x173A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x173A0F, .oplen = 3,
 	} } },
 	{ "vextractps", 1, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -1836,7 +1865,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x0,
 		.args = { M16 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDE, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDE, .oplen = 1,
 	} } },
 	{ "fbld", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x20,
@@ -1852,7 +1881,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0xE0D9, .oplen = 2,
 	} } },
 	{ "fclex", 1, (struct x64LookupActualIns[]) { {
-		.prefixes = 0x9B, .opcode = 0xE2DB, .oplen = 2,
+		.prefixes = 0x9B, .preflen = 1, .opcode = 0xE2DB, .oplen = 2,
 	} } },
 	{ "fnclex", 1, (struct x64LookupActualIns[]) { {
 		.opcode = 0xE2DB, .oplen = 2,
@@ -1970,7 +1999,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x30,
 		.args = { M16 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDE, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDE, .oplen = 1,
 	} } },
 	{ "fdivr", 4, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x38,
@@ -2000,7 +2029,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x38,
 		.args = { M16 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDE, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDE, .oplen = 1,
 	} } },
 	{ "ffree", 1, (struct x64LookupActualIns[]) { {
 		.args = { ST }, .arglen = 1, .reg_oper = 1,
@@ -2009,7 +2038,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "ficom", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x10,
 		.args = { M16 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDE, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDE, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrm = 0x10,
 		.args = { M32 }, .arglen = 1, .mem_oper = 1,
@@ -2018,7 +2047,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "ficomp", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x18,
 		.args = { M16 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDE, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDE, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrm = 0x18,
 		.args = { M32 }, .arglen = 1, .mem_oper = 1,
@@ -2027,7 +2056,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "fild", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x0,
 		.args = { M16 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDF, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDF, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrm = 0x0,
 		.args = { M32 }, .arglen = 1, .mem_oper = 1,
@@ -2041,7 +2070,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0xF7D9, .oplen = 2,
 	} } },
 	{ "finit", 1, (struct x64LookupActualIns[]) { {
-		.prefixes = 0x9B, .opcode = 0xE3DB, .oplen = 2,
+		.prefixes = 0x9B, .preflen = 1, .opcode = 0xE3DB, .oplen = 2,
 	} } },
 	{ "fninit", 1, (struct x64LookupActualIns[]) { {
 		.opcode = 0xE3DB, .oplen = 2,
@@ -2049,7 +2078,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "fist", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x10,
 		.args = { M16 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDF, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDF, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrm = 0x10,
 		.args = { M32 }, .arglen = 1, .mem_oper = 1,
@@ -2058,7 +2087,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "fistp", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x18,
 		.args = { M16 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDF, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDF, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrm = 0x18,
 		.args = { M32 }, .arglen = 1, .mem_oper = 1,
@@ -2071,7 +2100,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "fisttp", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x8,
 		.args = { M16 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDF, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDF, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrm = 0x8,
 		.args = { M32 }, .arglen = 1, .mem_oper = 1,
@@ -2156,7 +2185,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x8,
 		.args = { M16 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDE, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDE, .oplen = 1,
 	} } },
 	{ "fnop", 1, (struct x64LookupActualIns[]) { {
 		.opcode = 0xD0D9, .oplen = 2,
@@ -2184,7 +2213,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "fsave", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x30,
 		.args = { X64_ALLMEMMASK }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0x9B, .opcode = 0xDD, .oplen = 1,
+		.prefixes = 0x9B, .preflen = 1, .opcode = 0xDD, .oplen = 1,
 	} } },
 	{ "fnsave", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x30,
@@ -2234,7 +2263,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "fstcw", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x38,
 		.args = { M32 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0x9B, .opcode = 0xD9, .oplen = 1,
+		.prefixes = 0x9B, .preflen = 1, .opcode = 0xD9, .oplen = 1,
 	} } },
 	{ "fnstcw", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x38,
@@ -2244,7 +2273,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "fstenv", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x30,
 		.args = { M32 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0x9B, .opcode = 0xD9, .oplen = 1,
+		.prefixes = 0x9B, .preflen = 1, .opcode = 0xD9, .oplen = 1,
 	} } },
 	{ "fnstenv", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x30,
@@ -2254,10 +2283,10 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "fstsw", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x38,
 		.args = { M32 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0x9B, .opcode = 0xDD, .oplen = 1,
+		.prefixes = 0x9B, .preflen = 1, .opcode = 0xDD, .oplen = 1,
 	}, {
 		.args = { AX }, .arglen = 1,
-		.prefixes = 0x9B, .opcode = 0xE0DF, .oplen = 2,
+		.prefixes = 0x9B, .preflen = 1, .opcode = 0xE0DF, .oplen = 2,
 	} } },
 	{ "fnstsw", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x38,
@@ -2295,7 +2324,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x20,
 		.args = { M16 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDE, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDE, .oplen = 1,
 	} } },
 	{ "fsubr", 4, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x28,
@@ -2325,7 +2354,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x28,
 		.args = { M16 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDE, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDE, .oplen = 1,
 	} } },
 	{ "ftst", 1, (struct x64LookupActualIns[]) { {
 		.opcode = 0xE4D9, .oplen = 2,
@@ -2386,7 +2415,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "haddpd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x7C0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x7C0F, .oplen = 2,
 	} } },
 	{ "vhaddpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -2400,7 +2429,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "haddps", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0x7C0F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0x7C0F, .oplen = 2,
 	} } },
 	{ "vhaddps", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7b, .modrmreq = true, .modrmreg = true,
@@ -2417,7 +2446,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "hsubpd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x7D0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x7D0F, .oplen = 2,
 	} } },
 	{ "vhsubpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -2431,7 +2460,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "hsubps", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0x7D0F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0x7D0F, .oplen = 2,
 	} } },
 	{ "vhsubps", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7b, .modrmreq = true, .modrmreg = true,
@@ -2478,7 +2507,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xAF0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xAF0F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -2490,7 +2519,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x6B, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x6B, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
@@ -2502,7 +2531,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16, IMM16 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x69, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x69, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32, IMM32 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
@@ -2517,7 +2546,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0xE4, .oplen = 1,
 	}, {
 		.args = { AX, IMM8 }, .arglen = 2, .imm_oper = 2,
-		.prefixes = 0x66, .opcode = 0xE5, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xE5, .oplen = 1,
 	}, {
 		.args = { EAX, IMM8 }, .arglen = 2, .imm_oper = 2,
 		.opcode = 0xE5, .oplen = 1,
@@ -2526,7 +2555,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0xEC, .oplen = 1,
 	}, {
 		.args = { AX, DX }, .arglen = 2,
-		.prefixes = 0x66, .opcode = 0xED, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xED, .oplen = 1,
 	}, {
 		.args = { EAX, DX }, .arglen = 2,
 		.opcode = 0xED, .oplen = 1,
@@ -2553,7 +2582,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0x6C, .oplen = 1,
 	}, {
 		.args = { M16, DX }, .arglen = 2,
-		.prefixes = 0x66, .opcode = 0x6D, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x6D, .oplen = 1,
 	}, {
 		.args = { M32, DX }, .arglen = 2,
 		.opcode = 0x6D, .oplen = 1,
@@ -2562,7 +2591,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0x6C, .oplen = 1,
 	} } },
 	{ "insw", 1, (struct x64LookupActualIns[]) { {
-		.prefixes = 0x66, .opcode = 0x6D, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x6D, .oplen = 1,
 	} } },
 	{ "insd", 1, (struct x64LookupActualIns[]) { {
 		.opcode = 0x6D, .oplen = 1,
@@ -2570,7 +2599,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "insertps", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M32, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x213A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x213A0F, .oplen = 3,
 	} } },
 	{ "vinsertps", 1, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -2598,10 +2627,10 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "invpcid", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R64, M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x82380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x82380F, .oplen = 3,
 	} } },
 	{ "iret", 1, (struct x64LookupActualIns[]) { {
-		.prefixes = 0x66, .opcode = 0xCF, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xCF, .oplen = 1,
 	} } },
 	{ "iretd", 1, (struct x64LookupActualIns[]) { {
 		.opcode = 0xCF, .oplen = 1,
@@ -2857,7 +2886,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "lar", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x020F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x020F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -2870,7 +2899,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "lddqu", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0xF00F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0xF00F, .oplen = 2,
 	} } },
 	{ "vlddqu", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7b, .modrmreq = true, .modrmreg = true,
@@ -2894,7 +2923,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "lss", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, FARPTR1616 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xB20F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xB20F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, FARPTR1632 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -2907,7 +2936,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "lfs", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, FARPTR1616 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xB40F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xB40F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, FARPTR1632 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -2920,7 +2949,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "lgs", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, FARPTR1616 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xB50F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xB50F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, FARPTR1632 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -2945,7 +2974,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	} } },
 	{ "leave", 2, (struct x64LookupActualIns[]) { {
 		.args = { PREF66 }, .arglen = 1,
-		.prefixes = 0x66, .opcode = 0xC9, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xC9, .oplen = 1,
 	}, {
 		.opcode = 0xC9, .oplen = 1,
 	} } },
@@ -2980,7 +3009,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0xAC, .oplen = 1,
 	}, {
 		.args = { M16 }, .arglen = 1,
-		.prefixes = 0x66, .opcode = 0xAD, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xAD, .oplen = 1,
 	}, {
 		.args = { M32 }, .arglen = 1,
 		.opcode = 0xAD, .oplen = 1,
@@ -2993,7 +3022,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0xAC, .oplen = 1,
 	} } },
 	{ "lodsw", 1, (struct x64LookupActualIns[]) { {
-		.prefixes = 0x66, .opcode = 0xAD, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xAD, .oplen = 1,
 	} } },
 	{ "lodsd", 1, (struct x64LookupActualIns[]) { {
 		.opcode = 0xAD, .oplen = 1,
@@ -3017,7 +3046,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "lsl", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x030F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x030F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -3035,20 +3064,20 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "lzcnt", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF366, .opcode = 0xBD0F, .oplen = 2,
+		.prefixes = 0xF366, .preflen = 2, .opcode = 0xBD0F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0xBD0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xBD0F, .oplen = 2,
 	}, {
 		.rex = 0x48, .modrmreq = true, .modrmreg = true,
 		.args = { R64, R64 | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0xBD0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xBD0F, .oplen = 2,
 	} } },
 	{ "maskmovdqu", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xF70F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xF70F, .oplen = 2,
 	} } },
 	{ "vmaskmovdqu", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -3063,7 +3092,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "maxpd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x5F0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x5F0F, .oplen = 2,
 	} } },
 	{ "vmaxpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -3091,7 +3120,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "maxsd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0x5F0F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0x5F0F, .oplen = 2,
 	} } },
 	{ "vmaxsd", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7b, .modrmreq = true, .modrmreg = true,
@@ -3101,7 +3130,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "maxss", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x5F0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x5F0F, .oplen = 2,
 	} } },
 	{ "vmaxss", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7a, .modrmreq = true, .modrmreg = true,
@@ -3114,7 +3143,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "minpd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x5D0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x5D0F, .oplen = 2,
 	} } },
 	{ "vminpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -3142,7 +3171,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "minsd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0x5D0F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0x5D0F, .oplen = 2,
 	} } },
 	{ "vminsd", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7b, .modrmreq = true, .modrmreg = true,
@@ -3152,7 +3181,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "minss", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x5D0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x5D0F, .oplen = 2,
 	} } },
 	{ "vminss", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7a, .modrmreq = true, .modrmreg = true,
@@ -3175,7 +3204,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16 | M16, R16 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x89, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x89, .oplen = 1,
 		.preffered = true,
 	}, {
 		.modrmreq = true, .modrmreg = true,
@@ -3198,7 +3227,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x8B, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x8B, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -3232,7 +3261,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0xA0, .oplen = 1,
 	}, {
 		.args = { AX, MOFFS16 }, .arglen = 2, .rel_oper = 2,
-		.prefixes = 0x66, .opcode = 0xA1, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xA1, .oplen = 1,
 	}, {
 		.args = { EAX, MOFFS32 }, .arglen = 2, .rel_oper = 2,
 		.opcode = 0xA1, .oplen = 1,
@@ -3249,7 +3278,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0xA2, .oplen = 1,
 	}, {
 		.args = { MOFFS16, AX }, .arglen = 2, .rel_oper = 2,
-		.prefixes = 0x66, .opcode = 0xA3, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xA3, .oplen = 1,
 	}, {
 		.args = { MOFFS32, EAX }, .arglen = 2, .rel_oper = 2,
 		.opcode = 0xA3, .oplen = 1,
@@ -3267,7 +3296,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.preffered = true,
 	}, {
 		.args = { R16, IMM16 }, .arglen = 2, .imm_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xB8, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xB8, .oplen = 1,
 		.preffered = true,
 	}, {
 		.args = { R32, IMM32 }, .arglen = 2, .imm_oper = 2, .reg_oper = 1,
@@ -3284,7 +3313,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x0,
 		.args = { R16 | M16, IMM16 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0xC7, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xC7, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrm = 0x0,
 		.args = { R32 | M32, IMM32 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
@@ -3322,11 +3351,11 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "movapd", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x280F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x280F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM | M128, XMM }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x290F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x290F, .oplen = 2,
 		.preffered = true,
 	} } },
 	{ "vmovapd", 4, (struct x64LookupActualIns[]) { {
@@ -3380,7 +3409,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "movbe", 6, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xF0380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xF0380F, .oplen = 3,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -3392,7 +3421,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { M16, R16 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0xF1380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xF1380F, .oplen = 3,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { M32, R32 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
@@ -3413,11 +3442,11 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x6E0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x6E0F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32 | M32, XMM }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x7E0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x7E0F, .oplen = 2,
 	} } },
 	{ "movq", 8, (struct x64LookupActualIns[]) { {
 		.rex = 0x48, .modrmreq = true, .modrmreg = true,
@@ -3432,12 +3461,12 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.rex = 0x48, .modrmreq = true, .modrmreg = true,
 		.args = { XMM, R64 | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x6E0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x6E0F, .oplen = 2,
 		.preffered = true,
 	}, {
 		.rex = 0x48, .modrmreq = true, .modrmreg = true,
 		.args = { R64 | M64, XMM }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x7E0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x7E0F, .oplen = 2,
 		.preffered = true,
 	}, {
 		.modrmreq = true, .modrmreg = true,
@@ -3451,12 +3480,12 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x7E0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x7E0F, .oplen = 2,
 		.preffered = true,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM | M64, XMM }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0xD60F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xD60F, .oplen = 2,
 	} } },
 	{ "vmovd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -3494,7 +3523,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "movddup", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0x120F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0x120F, .oplen = 2,
 	} } },
 	{ "vmovddup", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7b, .modrmreq = true, .modrmreg = true,
@@ -3508,12 +3537,12 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "movdqa", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x6F0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x6F0F, .oplen = 2,
 		.preffered = true,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM | M128, XMM }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x7F0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x7F0F, .oplen = 2,
 	} } },
 	{ "vmovdqa", 4, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -3537,12 +3566,12 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "movdqu", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x6F0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x6F0F, .oplen = 2,
 		.preffered = true,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM | M128, XMM }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0xF3, .opcode = 0x7F0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x7F0F, .oplen = 2,
 	} } },
 	{ "vmovdqu", 4, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7a, .modrmreq = true, .modrmreg = true,
@@ -3565,7 +3594,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	} } },
 	{ "movdq2q", 1, (struct x64LookupActualIns[]) { {
 		.args = { MM, XMM }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0xD60F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0xD60F, .oplen = 2,
 	} } },
 	{ "movhlps", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -3580,11 +3609,11 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "movhpd", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x160F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x160F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { M64, XMM }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x170F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x170F, .oplen = 2,
 	} } },
 	{ "vmovhpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -3626,11 +3655,11 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "movlpd", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x120F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x120F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { M64, XMM }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x130F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x130F, .oplen = 2,
 	} } },
 	{ "vmovlpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -3662,7 +3691,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "movmskpd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R64 | R32, XMM }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x500F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x500F, .oplen = 2,
 	} } },
 	{ "vmovmskpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -3690,7 +3719,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "movntdqa", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x2A380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x2A380F, .oplen = 3,
 	} } },
 	{ "vmovntdqa", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -3704,7 +3733,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "movntdq", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { M128, XMM }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0xE70F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xE70F, .oplen = 2,
 	} } },
 	{ "vmovntdq", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -3727,7 +3756,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "movntpd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { M128, XMM }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x2B0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x2B0F, .oplen = 2,
 	} } },
 	{ "vmovntpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -3760,14 +3789,14 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "movq2dq", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, MM }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0xD60F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xD60F, .oplen = 2,
 	} } },
 	{ "movs", 4, (struct x64LookupActualIns[]) { {
 		.args = { M8, M8 }, .arglen = 2,
 		.opcode = 0xA4, .oplen = 1,
 	}, {
 		.args = { M16, M16 }, .arglen = 2,
-		.prefixes = 0x66, .opcode = 0xA5, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xA5, .oplen = 1,
 	}, {
 		.args = { M32, M32 }, .arglen = 2,
 		.opcode = 0xA5, .oplen = 1,
@@ -3780,19 +3809,19 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0xA4, .oplen = 1,
 	} } },
 	{ "movsw", 1, (struct x64LookupActualIns[]) { {
-		.prefixes = 0x66, .opcode = 0xA5, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xA5, .oplen = 1,
 	} } },
 	{ "movsd", 3, (struct x64LookupActualIns[]) { {
 		.opcode = 0xA5, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0x100F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0x100F, .oplen = 2,
 		.preffered = true,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM | M64, XMM }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0xF2, .opcode = 0x110F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0x110F, .oplen = 2,
 	} } },
 	{ "movsq", 1, (struct x64LookupActualIns[]) { {
 		.rex = 0x48,
@@ -3819,7 +3848,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "movshdup", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x160F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x160F, .oplen = 2,
 	} } },
 	{ "vmovshdup", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7a, .modrmreq = true, .modrmreg = true,
@@ -3833,7 +3862,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "movsldup", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x120F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x120F, .oplen = 2,
 	} } },
 	{ "vmovsldup", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7a, .modrmreq = true, .modrmreg = true,
@@ -3847,12 +3876,12 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "movss", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x100F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x100F, .oplen = 2,
 		.preffered = true,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM | M32, XMM }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0xF3, .opcode = 0x110F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x110F, .oplen = 2,
 	} } },
 	{ "vmovss", 4, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7a, .modrmreq = true, .modrmreg = true,
@@ -3875,7 +3904,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "movsx", 5, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R8 | M8 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xBE0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xBE0F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R8 | M8 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -3901,12 +3930,12 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "movupd", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x100F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x100F, .oplen = 2,
 		.preffered = true,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM | M128, XMM }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x110F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x110F, .oplen = 2,
 	} } },
 	{ "vmovupd", 4, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -3959,7 +3988,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "movzx", 5, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R8 | M8 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xB60F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xB60F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R8 | M8 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -3980,7 +4009,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "mpsadbw", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x423A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x423A0F, .oplen = 3,
 	} } },
 	{ "vmpsadbw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4011,7 +4040,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "mulpd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x590F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x590F, .oplen = 2,
 	} } },
 	{ "vmulpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4039,7 +4068,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "mulsd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0x590F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0x590F, .oplen = 2,
 	} } },
 	{ "vmulsd", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7b, .modrmreq = true, .modrmreg = true,
@@ -4049,7 +4078,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "mulss", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x590F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x590F, .oplen = 2,
 	} } },
 	{ "vmulss", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7a, .modrmreq = true, .modrmreg = true,
@@ -4118,7 +4147,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0x0C, .oplen = 1,
 	}, {
 		.args = { AX, IMM16 }, .arglen = 2, .imm_oper = 2,
-		.prefixes = 0x66, .opcode = 0x0D, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x0D, .oplen = 1,
 	}, {
 		.args = { EAX, IMM32 }, .arglen = 2, .imm_oper = 2,
 		.opcode = 0x0D, .oplen = 1,
@@ -4133,7 +4162,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x8,
 		.args = { R16 | M16, IMM16 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0x81, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x81, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrm = 0x8,
 		.args = { R32 | M32, IMM32 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
@@ -4170,7 +4199,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16 | M16, R16 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x09, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x09, .oplen = 1,
 		.preffered = true,
 	}, {
 		.modrmreq = true, .modrmreg = true,
@@ -4193,7 +4222,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x0B, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x0B, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -4206,7 +4235,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "orpd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x560F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x560F, .oplen = 2,
 	} } },
 	{ "vorpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4236,7 +4265,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0xE6, .oplen = 1,
 	}, {
 		.args = { IMM8, AX }, .arglen = 2, .imm_oper = 1,
-		.prefixes = 0x66, .opcode = 0xE7, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xE7, .oplen = 1,
 	}, {
 		.args = { IMM8, EAX }, .arglen = 2, .imm_oper = 1,
 		.opcode = 0xE7, .oplen = 1,
@@ -4245,7 +4274,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0xEE, .oplen = 1,
 	}, {
 		.args = { DX, AX }, .arglen = 2,
-		.prefixes = 0x66, .opcode = 0xEF, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xEF, .oplen = 1,
 	}, {
 		.args = { DX, EAX }, .arglen = 2,
 		.opcode = 0xEF, .oplen = 1,
@@ -4255,7 +4284,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0x6E, .oplen = 1,
 	}, {
 		.args = { DX, M16 }, .arglen = 2,
-		.prefixes = 0x66, .opcode = 0x6F, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x6F, .oplen = 1,
 	}, {
 		.args = { DX, M32 }, .arglen = 2,
 		.opcode = 0x6F, .oplen = 1,
@@ -4264,7 +4293,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0x6E, .oplen = 1,
 	} } },
 	{ "outsw", 1, (struct x64LookupActualIns[]) { {
-		.prefixes = 0x66, .opcode = 0x6F, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x6F, .oplen = 1,
 	} } },
 	{ "outsd", 1, (struct x64LookupActualIns[]) { {
 		.opcode = 0x6F, .oplen = 1,
@@ -4276,7 +4305,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x1C380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x1C380F, .oplen = 3,
 	} } },
 	{ "pabsw", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -4285,7 +4314,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x1D380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x1D380F, .oplen = 3,
 	} } },
 	{ "pabsd", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -4294,7 +4323,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x1E380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x1E380F, .oplen = 3,
 	} } },
 	{ "vpabsb", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4330,7 +4359,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x630F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x630F, .oplen = 2,
 	} } },
 	{ "packssdw", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -4339,7 +4368,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x6B0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x6B0F, .oplen = 2,
 	} } },
 	{ "vpacksswb", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4362,7 +4391,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "packusdw", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x2B380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x2B380F, .oplen = 3,
 	} } },
 	{ "vpackusdw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4380,7 +4409,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x670F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x670F, .oplen = 2,
 	} } },
 	{ "vpackuswb", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4398,7 +4427,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xFC0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xFC0F, .oplen = 2,
 	} } },
 	{ "paddw", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -4407,7 +4436,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xFD0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xFD0F, .oplen = 2,
 	} } },
 	{ "paddd", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -4416,7 +4445,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xFE0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xFE0F, .oplen = 2,
 	} } },
 	{ "vpaddb", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4452,7 +4481,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xD40F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xD40F, .oplen = 2,
 	} } },
 	{ "vpaddq", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4470,7 +4499,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xEC0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xEC0F, .oplen = 2,
 	} } },
 	{ "paddsw", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -4479,7 +4508,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xED0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xED0F, .oplen = 2,
 	} } },
 	{ "vpaddsb", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4506,7 +4535,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDC0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDC0F, .oplen = 2,
 	} } },
 	{ "paddusw", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -4515,7 +4544,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDD0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDD0F, .oplen = 2,
 	} } },
 	{ "vpaddusb", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4540,7 +4569,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0x0F3A0F, .oplen = 3,
 	}, {
 		.args = { XMM, XMM | M128, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x0F3A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x0F3A0F, .oplen = 3,
 	} } },
 	{ "vpalignr", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4558,7 +4587,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDB0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDB0F, .oplen = 2,
 	} } },
 	{ "vpand", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4576,7 +4605,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDF0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDF0F, .oplen = 2,
 	} } },
 	{ "vpandn", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4588,7 +4617,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0xDF, .oplen = 1,
 	} } },
 	{ "pause", 1, (struct x64LookupActualIns[]) { {
-		.prefixes = 0xF3, .opcode = 0x90, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x90, .oplen = 1,
 	} } },
 	{ "pavgb", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -4597,7 +4626,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xE00F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xE00F, .oplen = 2,
 	} } },
 	{ "pavgw", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -4606,7 +4635,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xE30F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xE30F, .oplen = 2,
 	} } },
 	{ "vpavgb", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4629,7 +4658,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pblendvb", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128, XMM_0 }, .arglen = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x10380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x10380F, .oplen = 3,
 	} } },
 	{ "vpblendvb", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4643,7 +4672,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pblendw", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x0E3A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x0E3A0F, .oplen = 3,
 	} } },
 	{ "vpblendw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4657,7 +4686,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pclmulqdq", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x443A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x443A0F, .oplen = 3,
 	} } },
 	{ "vpclmulqdq", 1, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4671,7 +4700,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x740F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x740F, .oplen = 2,
 	} } },
 	{ "pcmpeqw", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -4680,7 +4709,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x750F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x750F, .oplen = 2,
 	} } },
 	{ "pcmpeqd", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -4689,7 +4718,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x760F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x760F, .oplen = 2,
 	} } },
 	{ "vpcmpeqb", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4721,7 +4750,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pcmpeqq", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x29380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x29380F, .oplen = 3,
 	} } },
 	{ "vpcmpeqq", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4735,7 +4764,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pcmpestri", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x613A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x613A0F, .oplen = 3,
 	} } },
 	{ "vpcmpestri", 1, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4745,7 +4774,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pcmpestrm", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x603A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x603A0F, .oplen = 3,
 	} } },
 	{ "vpcmpestrm", 1, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4759,7 +4788,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x640F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x640F, .oplen = 2,
 	} } },
 	{ "pcmpgtw", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -4768,7 +4797,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x650F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x650F, .oplen = 2,
 	} } },
 	{ "pcmpgtd", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -4777,7 +4806,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x660F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x660F, .oplen = 2,
 	} } },
 	{ "vpcmpgtb", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4809,7 +4838,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pcmpgtq", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x37380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x37380F, .oplen = 3,
 	} } },
 	{ "vpcmpgtq", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4823,7 +4852,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pcmpistri", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x633A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x633A0F, .oplen = 3,
 	} } },
 	{ "vpcmpistri", 1, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4833,7 +4862,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pcmpistrm", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x623A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x623A0F, .oplen = 3,
 	} } },
 	{ "vpcmpistrm", 1, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4861,17 +4890,17 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pextrb", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R64 | R32 | M8, XMM, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x143A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x143A0F, .oplen = 3,
 	} } },
 	{ "pextrd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32 | M32, XMM, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x163A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x163A0F, .oplen = 3,
 	} } },
 	{ "pextrq", 1, (struct x64LookupActualIns[]) { {
 		.rex = 0x48, .modrmreq = true, .modrmreg = true,
 		.args = { R64 | M64, XMM, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x163A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x163A0F, .oplen = 3,
 	} } },
 	{ "vpextrb", 1, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4895,12 +4924,12 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R64 | R32, XMM, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xC50F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xC50F, .oplen = 2,
 		.preffered = true,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R64 | R32 | M16, XMM, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x153A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x153A0F, .oplen = 3,
 	} } },
 	{ "vpextrw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4919,7 +4948,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x01380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x01380F, .oplen = 3,
 	} } },
 	{ "phaddd", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -4928,7 +4957,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x02380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x02380F, .oplen = 3,
 	} } },
 	{ "vphaddw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4955,7 +4984,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x03380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x03380F, .oplen = 3,
 	} } },
 	{ "vphaddsw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4969,7 +4998,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "phminposuw", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x41380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x41380F, .oplen = 3,
 	} } },
 	{ "vphminposuw", 1, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -4983,7 +5012,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x05380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x05380F, .oplen = 3,
 	} } },
 	{ "phsubd", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -4992,7 +5021,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x06380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x06380F, .oplen = 3,
 	} } },
 	{ "vphsubw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5019,7 +5048,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x07380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x07380F, .oplen = 3,
 	} } },
 	{ "vphsubsw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5033,12 +5062,12 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pinsrb", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, R32 | M8, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x203A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x203A0F, .oplen = 3,
 	} } },
 	{ "pinsrd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, R32 | M32, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x223A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x223A0F, .oplen = 3,
 	} } },
 	{ "vpinsrb", 1, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5062,7 +5091,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, R32 | M16, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xC40F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xC40F, .oplen = 2,
 	} } },
 	{ "vpinsrw", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5076,7 +5105,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x04380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x04380F, .oplen = 3,
 	} } },
 	{ "vpmaddubsw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5094,7 +5123,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xF50F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xF50F, .oplen = 2,
 	} } },
 	{ "vpmaddwd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5108,7 +5137,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pmaxsb", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x3C380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x3C380F, .oplen = 3,
 	} } },
 	{ "vpmaxsb", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5122,7 +5151,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pmaxsd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x3D380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x3D380F, .oplen = 3,
 	} } },
 	{ "vpmaxsd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5140,7 +5169,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xEE0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xEE0F, .oplen = 2,
 	} } },
 	{ "vpmaxsw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5158,7 +5187,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDE0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDE0F, .oplen = 2,
 	} } },
 	{ "vpmaxub", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5172,7 +5201,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pmaxud", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x3F380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x3F380F, .oplen = 3,
 	} } },
 	{ "vpmaxud", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5186,7 +5215,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pmaxuw", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x3E380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x3E380F, .oplen = 3,
 	} } },
 	{ "vpmaxuw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5200,7 +5229,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pminsb", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x38380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x38380F, .oplen = 3,
 	} } },
 	{ "vpminsb", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5214,7 +5243,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pminsd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x39380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x39380F, .oplen = 3,
 	} } },
 	{ "vpminsd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5232,7 +5261,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xEA0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xEA0F, .oplen = 2,
 	} } },
 	{ "vpminsw", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5246,7 +5275,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xDA0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xDA0F, .oplen = 2,
 	} } },
 	{ "vpminub", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5260,7 +5289,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pminud", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x3B380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x3B380F, .oplen = 3,
 	} } },
 	{ "vpminud", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5274,7 +5303,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pminuw", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x3A380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x3A380F, .oplen = 3,
 	} } },
 	{ "vpminuw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5292,7 +5321,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R64 | R32, XMM }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xD70F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xD70F, .oplen = 2,
 	} } },
 	{ "vpmovmskb", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5306,32 +5335,32 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pmovsxbw", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x2038, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x2038, .oplen = 2,
 	} } },
 	{ "pmovsxbd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x2138, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x2138, .oplen = 2,
 	} } },
 	{ "pmovsxbq", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x2238, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x2238, .oplen = 2,
 	} } },
 	{ "pmovsxwd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x2338, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x2338, .oplen = 2,
 	} } },
 	{ "pmovsxwq", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x2438, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x2438, .oplen = 2,
 	} } },
 	{ "pmovsxdq", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x2538, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x2538, .oplen = 2,
 	} } },
 	{ "vpmovsxbw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5390,32 +5419,32 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pmovzxbw", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x3038, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x3038, .oplen = 2,
 	} } },
 	{ "pmovzxbd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x3138, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x3138, .oplen = 2,
 	} } },
 	{ "pmovzxbq", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x3238, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x3238, .oplen = 2,
 	} } },
 	{ "pmovzxwd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x3338, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x3338, .oplen = 2,
 	} } },
 	{ "pmovzxwq", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x3438, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x3438, .oplen = 2,
 	} } },
 	{ "pmovzxdq", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x3538, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x3538, .oplen = 2,
 	} } },
 	{ "vpmovzxbw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5474,7 +5503,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pmuldq", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x28380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x28380F, .oplen = 3,
 	} } },
 	{ "vpmuldq", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5492,7 +5521,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x0B380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x0B380F, .oplen = 3,
 	} } },
 	{ "vpmulhrsw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5510,7 +5539,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xE40F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xE40F, .oplen = 2,
 	} } },
 	{ "vpmulhuw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5528,7 +5557,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xE50F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xE50F, .oplen = 2,
 	} } },
 	{ "vpmulhw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5542,7 +5571,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pmulld", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x40380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x40380F, .oplen = 3,
 	} } },
 	{ "vpmulld", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5560,7 +5589,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xD50F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xD50F, .oplen = 2,
 	} } },
 	{ "vpmullw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5578,7 +5607,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xF40F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xF40F, .oplen = 2,
 	} } },
 	{ "vpmuludq", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5599,7 +5628,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0x8F, .oplen = 1,
 	}, {
 		.args = { R16 }, .arglen = 1, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x58, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x58, .oplen = 1,
 		.preffered = true,
 	}, {
 		.args = { R64 }, .arglen = 1, .reg_oper = 1,
@@ -5607,13 +5636,13 @@ static const x64LookupGeneralIns x64Table[] = {
 		.preffered = true,
 	}, {
 		.args = { FS, PREF66 }, .arglen = 2,
-		.prefixes = 0x66, .opcode = 0xA10F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xA10F, .oplen = 2,
 	}, {
 		.args = { FS }, .arglen = 1,
 		.opcode = 0xA10F, .oplen = 2,
 	}, {
 		.args = { GS, PREF66 }, .arglen = 2,
-		.prefixes = 0x66, .opcode = 0xA90F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xA90F, .oplen = 2,
 	}, {
 		.args = { GS }, .arglen = 1,
 		.opcode = 0xA90F, .oplen = 2,
@@ -5621,18 +5650,18 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "popcnt", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF366, .opcode = 0xB80F, .oplen = 2,
+		.prefixes = 0xF366, .preflen = 2, .opcode = 0xB80F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0xB80F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xB80F, .oplen = 2,
 	}, {
 		.rex = 0x48, .modrmreq = true, .modrmreg = true,
 		.args = { R64, R64 | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0xB80F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xB80F, .oplen = 2,
 	} } },
 	{ "popf", 1, (struct x64LookupActualIns[]) { {
-		.prefixes = 0x66, .opcode = 0x9D, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x9D, .oplen = 1,
 	} } },
 	{ "popfq", 1, (struct x64LookupActualIns[]) { {
 		.opcode = 0x9D, .oplen = 1,
@@ -5644,7 +5673,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xEB0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xEB0F, .oplen = 2,
 	} } },
 	{ "vpor", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5682,7 +5711,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xF60F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xF60F, .oplen = 2,
 	} } },
 	{ "vpsadbw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5700,7 +5729,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x00380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x00380F, .oplen = 3,
 	} } },
 	{ "vpshufb", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5714,7 +5743,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pshufd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x700F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x700F, .oplen = 2,
 	} } },
 	{ "vpshufd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5728,7 +5757,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pshufhw", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x700F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x700F, .oplen = 2,
 	} } },
 	{ "vpshufhw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7a, .modrmreq = true, .modrmreg = true,
@@ -5742,7 +5771,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pshuflw", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0x700F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0x700F, .oplen = 2,
 	} } },
 	{ "vpshuflw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7b, .modrmreq = true, .modrmreg = true,
@@ -5765,7 +5794,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x08380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x08380F, .oplen = 3,
 	} } },
 	{ "psignw", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -5774,7 +5803,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x09380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x09380F, .oplen = 3,
 	} } },
 	{ "psignd", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -5783,7 +5812,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x0A380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x0A380F, .oplen = 3,
 	} } },
 	{ "vpsignb", 1, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5803,7 +5832,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "pslldq", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x38,
 		.args = { XMM, IMM8 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0x730F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x730F, .oplen = 2,
 	} } },
 	{ "vpslldq", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrm = 0x38,
@@ -5821,7 +5850,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xF10F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xF10F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrm = 0x30,
 		.args = { MM, IMM8 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
@@ -5829,7 +5858,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x30,
 		.args = { XMM, IMM8 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0x710F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x710F, .oplen = 2,
 		.preffered = true,
 	} } },
 	{ "pslld", 4, (struct x64LookupActualIns[]) { {
@@ -5839,7 +5868,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xF20F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xF20F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrm = 0x30,
 		.args = { MM, IMM8 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
@@ -5847,7 +5876,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x30,
 		.args = { XMM, IMM8 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0x720F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x720F, .oplen = 2,
 	} } },
 	{ "psllq", 4, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -5856,7 +5885,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xF30F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xF30F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrm = 0x30,
 		.args = { MM, IMM8 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
@@ -5864,7 +5893,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x30,
 		.args = { XMM, IMM8 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0x730F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x730F, .oplen = 2,
 	} } },
 	{ "vpsllw", 4, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5924,7 +5953,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xE10F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xE10F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrm = 0x20,
 		.args = { MM, IMM8 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
@@ -5932,7 +5961,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x20,
 		.args = { XMM, IMM8 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0x710F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x710F, .oplen = 2,
 	} } },
 	{ "psrad", 4, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -5941,7 +5970,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xE20F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xE20F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrm = 0x20,
 		.args = { MM, IMM8 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
@@ -5949,7 +5978,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x20,
 		.args = { XMM, IMM8 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0x720F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x720F, .oplen = 2,
 	} } },
 	{ "vpsraw", 4, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -5988,7 +6017,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "psrldq", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x18,
 		.args = { XMM, IMM8 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0x730F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x730F, .oplen = 2,
 	} } },
 	{ "vpsrldq", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrm = 0x18,
@@ -6006,7 +6035,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xD10F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xD10F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrm = 0x10,
 		.args = { MM, IMM8 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
@@ -6014,7 +6043,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x10,
 		.args = { XMM, IMM8 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0x710F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x710F, .oplen = 2,
 	} } },
 	{ "psrld", 4, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -6023,7 +6052,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xD20F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xD20F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrm = 0x10,
 		.args = { MM, IMM8 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
@@ -6031,7 +6060,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x10,
 		.args = { XMM, IMM8 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0x720F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x720F, .oplen = 2,
 	} } },
 	{ "psrlq", 4, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -6040,7 +6069,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xD30F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xD30F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrm = 0x10,
 		.args = { MM, IMM8 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
@@ -6048,7 +6077,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x10,
 		.args = { XMM, IMM8 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0x730F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x730F, .oplen = 2,
 	} } },
 	{ "vpsrlw", 4, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -6108,7 +6137,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xF80F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xF80F, .oplen = 2,
 	} } },
 	{ "psubw", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -6117,7 +6146,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xF90F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xF90F, .oplen = 2,
 	} } },
 	{ "psubd", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -6126,7 +6155,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xFA0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xFA0F, .oplen = 2,
 	} } },
 	{ "vpsubb", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -6162,7 +6191,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xFB0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xFB0F, .oplen = 2,
 	} } },
 	{ "vpsubq", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -6180,7 +6209,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xE80F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xE80F, .oplen = 2,
 	} } },
 	{ "psubsw", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -6189,7 +6218,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xE90F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xE90F, .oplen = 2,
 	} } },
 	{ "vpsubsb", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -6216,7 +6245,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xD80F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xD80F, .oplen = 2,
 	} } },
 	{ "psubusw", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -6225,7 +6254,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xD90F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xD90F, .oplen = 2,
 	} } },
 	{ "vpsubusb", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -6248,7 +6277,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "ptest", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x17380F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x17380F, .oplen = 3,
 	} } },
 	{ "vptest", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 2, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -6266,7 +6295,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x680F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x680F, .oplen = 2,
 	} } },
 	{ "punpckhwd", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -6275,7 +6304,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x690F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x690F, .oplen = 2,
 	} } },
 	{ "punpckhdq", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -6284,12 +6313,12 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x6A0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x6A0F, .oplen = 2,
 	} } },
 	{ "punpckhqdq", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x6D0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x6D0F, .oplen = 2,
 	} } },
 	{ "vpunpckhbw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -6334,7 +6363,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x600F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x600F, .oplen = 2,
 	} } },
 	{ "punpcklwd", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -6343,7 +6372,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x610F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x610F, .oplen = 2,
 	} } },
 	{ "punpckldq", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
@@ -6352,12 +6381,12 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x620F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x620F, .oplen = 2,
 	} } },
 	{ "punpcklqdq", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x6C0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x6C0F, .oplen = 2,
 	} } },
 	{ "vpunpcklbw", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -6405,7 +6434,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0xFF, .oplen = 1,
 	}, {
 		.args = { R16 }, .arglen = 1, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x50, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x50, .oplen = 1,
 		.preffered = true,
 	}, {
 		.args = { R64 }, .arglen = 1, .reg_oper = 1,
@@ -6423,20 +6452,20 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0x6A, .oplen = 1,
 	}, {
 		.args = { IMM16 }, .arglen = 1, .imm_oper = 1,
-		.prefixes = 0x66, .opcode = 0x68, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x68, .oplen = 1,
 	}, {
 		.args = { IMM32 }, .arglen = 1, .imm_oper = 1,
 		.opcode = 0x68, .oplen = 1,
 	} } },
 	{ "pushw", 2, (struct x64LookupActualIns[]) { {
 		.args = { IMM8 }, .arglen = 1, .imm_oper = 1,
-		.prefixes = 0x66, .opcode = 0x6A, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x6A, .oplen = 1,
 	}, {
 		.args = { IMM16 }, .arglen = 1, .imm_oper = 1,
-		.prefixes = 0x66, .opcode = 0x68, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x68, .oplen = 1,
 	} } },
 	{ "pushf", 1, (struct x64LookupActualIns[]) { {
-		.prefixes = 0x66, .opcode = 0x9C, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x9C, .oplen = 1,
 	} } },
 	{ "pushfq", 1, (struct x64LookupActualIns[]) { {
 		.opcode = 0x9C, .oplen = 1,
@@ -6448,7 +6477,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xEF0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xEF0F, .oplen = 2,
 	} } },
 	{ "vpxor", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -6672,7 +6701,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "rcpss", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x530F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x530F, .oplen = 2,
 	} } },
 	{ "vrcpss", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7a, .modrmreq = true, .modrmreg = true,
@@ -6682,20 +6711,20 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "rdfsbase", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x0,
 		.args = { R32 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0xF3, .opcode = 0xAE0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xAE0F, .oplen = 2,
 	}, {
 		.rex = 0x48, .modrmreq = true, .modrm = 0x0,
 		.args = { R64 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0xF3, .opcode = 0xAE0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xAE0F, .oplen = 2,
 	} } },
 	{ "rdgsbase", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x8,
 		.args = { R32 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0xF3, .opcode = 0xAE0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xAE0F, .oplen = 2,
 	}, {
 		.rex = 0x48, .modrmreq = true, .modrm = 0x8,
 		.args = { R64 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0xF3, .opcode = 0xAE0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xAE0F, .oplen = 2,
 	} } },
 	{ "rdmsr", 1, (struct x64LookupActualIns[]) { {
 		.opcode = 0x320F, .oplen = 2,
@@ -6706,7 +6735,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "rdrand", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x30,
 		.args = { R16 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0xC70F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xC70F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrm = 0x30,
 		.args = { R32 }, .arglen = 1, .mem_oper = 1,
@@ -6724,192 +6753,192 @@ static const x64LookupGeneralIns x64Table[] = {
 	} } },
 	{ "rep ins", 5, (struct x64LookupActualIns[]) { {
 		.args = { M8, DX }, .arglen = 2,
-		.prefixes = 0xF3, .opcode = 0x6C, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x6C, .oplen = 1,
 		.preffered = true,
 	}, {
 		.rex = 0x48,
 		.args = { M8, DX }, .arglen = 2,
-		.prefixes = 0xF3, .opcode = 0x6C, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x6C, .oplen = 1,
 	}, {
 		.args = { M16, DX }, .arglen = 2,
-		.prefixes = 0xF366, .opcode = 0x6D, .oplen = 1,
+		.prefixes = 0xF366, .preflen = 2, .opcode = 0x6D, .oplen = 1,
 		.preffered = true,
 	}, {
 		.args = { M32, DX }, .arglen = 2,
-		.prefixes = 0xF3, .opcode = 0x6D, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x6D, .oplen = 1,
 		.preffered = true,
 	}, {
 		.rex = 0x48,
 		.args = { M64, DX }, .arglen = 2,
-		.prefixes = 0xF3, .opcode = 0x6D, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x6D, .oplen = 1,
 	} } },
 	{ "rep movs", 5, (struct x64LookupActualIns[]) { {
 		.args = { M8, M8 }, .arglen = 2,
-		.prefixes = 0xF3, .opcode = 0xA4, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xA4, .oplen = 1,
 		.preffered = true,
 	}, {
 		.rex = 0x48,
 		.args = { M8, M8 }, .arglen = 2,
-		.prefixes = 0xF3, .opcode = 0xA4, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xA4, .oplen = 1,
 	}, {
 		.args = { M16, M16 }, .arglen = 2,
-		.prefixes = 0xF366, .opcode = 0xA5, .oplen = 1,
+		.prefixes = 0xF366, .preflen = 2, .opcode = 0xA5, .oplen = 1,
 		.preffered = true,
 	}, {
 		.args = { M32, M32 }, .arglen = 2,
-		.prefixes = 0xF3, .opcode = 0xA5, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xA5, .oplen = 1,
 		.preffered = true,
 	}, {
 		.rex = 0x48,
 		.args = { M64, M64 }, .arglen = 2,
-		.prefixes = 0xF3, .opcode = 0xA5, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xA5, .oplen = 1,
 	} } },
 	{ "rep outs", 5, (struct x64LookupActualIns[]) { {
 		.args = { DX, M8 }, .arglen = 2,
-		.prefixes = 0xF3, .opcode = 0x6E, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x6E, .oplen = 1,
 		.preffered = true,
 	}, {
 		.rex = 0x48,
 		.args = { DX, M8 }, .arglen = 2,
-		.prefixes = 0xF3, .opcode = 0x6E, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x6E, .oplen = 1,
 	}, {
 		.args = { DX, M16 }, .arglen = 2,
-		.prefixes = 0xF366, .opcode = 0x6F, .oplen = 1,
+		.prefixes = 0xF366, .preflen = 2, .opcode = 0x6F, .oplen = 1,
 		.preffered = true,
 	}, {
 		.args = { DX, M32 }, .arglen = 2,
-		.prefixes = 0xF3, .opcode = 0x6F, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x6F, .oplen = 1,
 		.preffered = true,
 	}, {
 		.rex = 0x48,
 		.args = { DX, M64 }, .arglen = 2,
-		.prefixes = 0xF3, .opcode = 0x6F, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x6F, .oplen = 1,
 	} } },
 	{ "rep lods", 5, (struct x64LookupActualIns[]) { {
 		.args = { AL }, .arglen = 1,
-		.prefixes = 0xF3, .opcode = 0xAC, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xAC, .oplen = 1,
 		.preffered = true,
 	}, {
 		.rex = 0x48,
 		.args = { AL }, .arglen = 1,
-		.prefixes = 0xF3, .opcode = 0xAC, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xAC, .oplen = 1,
 	}, {
 		.args = { AX }, .arglen = 1,
-		.prefixes = 0xF366, .opcode = 0xAD, .oplen = 1,
+		.prefixes = 0xF366, .preflen = 2, .opcode = 0xAD, .oplen = 1,
 		.preffered = true,
 	}, {
 		.args = { EAX }, .arglen = 1,
-		.prefixes = 0xF3, .opcode = 0xAD, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xAD, .oplen = 1,
 		.preffered = true,
 	}, {
 		.rex = 0x48,
 		.args = { RAX }, .arglen = 1,
-		.prefixes = 0xF3, .opcode = 0xAD, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xAD, .oplen = 1,
 	} } },
 	{ "rep stos", 5, (struct x64LookupActualIns[]) { {
 		.args = { M8 }, .arglen = 1,
-		.prefixes = 0xF3, .opcode = 0xAA, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xAA, .oplen = 1,
 		.preffered = true,
 	}, {
 		.rex = 0x48,
 		.args = { M8 }, .arglen = 1,
-		.prefixes = 0xF3, .opcode = 0xAA, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xAA, .oplen = 1,
 	}, {
 		.args = { M16 }, .arglen = 1,
-		.prefixes = 0xF366, .opcode = 0xAB, .oplen = 1,
+		.prefixes = 0xF366, .preflen = 2, .opcode = 0xAB, .oplen = 1,
 		.preffered = true,
 	}, {
 		.args = { M32 }, .arglen = 1,
-		.prefixes = 0xF3, .opcode = 0xAB, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xAB, .oplen = 1,
 		.preffered = true,
 	}, {
 		.rex = 0x48,
 		.args = { M64 }, .arglen = 1,
-		.prefixes = 0xF3, .opcode = 0xAB, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xAB, .oplen = 1,
 	} } },
 	{ "repe cmps", 5, (struct x64LookupActualIns[]) { {
 		.args = { M8, M8 }, .arglen = 2,
-		.prefixes = 0xF3, .opcode = 0xA6, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xA6, .oplen = 1,
 		.preffered = true,
 	}, {
 		.rex = 0x48,
 		.args = { M8, M8 }, .arglen = 2,
-		.prefixes = 0xF3, .opcode = 0xA6, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xA6, .oplen = 1,
 	}, {
 		.args = { M16, M16 }, .arglen = 2,
-		.prefixes = 0xF366, .opcode = 0xA7, .oplen = 1,
+		.prefixes = 0xF366, .preflen = 2, .opcode = 0xA7, .oplen = 1,
 		.preffered = true,
 	}, {
 		.args = { M32, M32 }, .arglen = 2,
-		.prefixes = 0xF3, .opcode = 0xA7, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xA7, .oplen = 1,
 		.preffered = true,
 	}, {
 		.rex = 0x48,
 		.args = { M64, M64 }, .arglen = 2,
-		.prefixes = 0xF3, .opcode = 0xA7, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xA7, .oplen = 1,
 	} } },
 	{ "repe scas", 5, (struct x64LookupActualIns[]) { {
 		.args = { M8 }, .arglen = 1,
-		.prefixes = 0xF3, .opcode = 0xAE, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xAE, .oplen = 1,
 		.preffered = true,
 	}, {
 		.rex = 0x48,
 		.args = { M8 }, .arglen = 1,
-		.prefixes = 0xF3, .opcode = 0xAE, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xAE, .oplen = 1,
 	}, {
 		.args = { M16 }, .arglen = 1,
-		.prefixes = 0xF366, .opcode = 0xAF, .oplen = 1,
+		.prefixes = 0xF366, .preflen = 2, .opcode = 0xAF, .oplen = 1,
 		.preffered = true,
 	}, {
 		.args = { M32 }, .arglen = 1,
-		.prefixes = 0xF3, .opcode = 0xAF, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xAF, .oplen = 1,
 		.preffered = true,
 	}, {
 		.rex = 0x48,
 		.args = { M64 }, .arglen = 1,
-		.prefixes = 0xF3, .opcode = 0xAF, .oplen = 1,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xAF, .oplen = 1,
 	} } },
 	{ "repne cmps", 5, (struct x64LookupActualIns[]) { {
 		.args = { M8, M8 }, .arglen = 2,
-		.prefixes = 0xF2, .opcode = 0xA6, .oplen = 1,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0xA6, .oplen = 1,
 		.preffered = true,
 	}, {
 		.rex = 0x48,
 		.args = { M8, M8 }, .arglen = 2,
-		.prefixes = 0xF2, .opcode = 0xA6, .oplen = 1,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0xA6, .oplen = 1,
 	}, {
 		.args = { M16, M16 }, .arglen = 2,
-		.prefixes = 0xF266, .opcode = 0xA7, .oplen = 1,
+		.prefixes = 0xF266, .preflen = 2, .opcode = 0xA7, .oplen = 1,
 		.preffered = true,
 	}, {
 		.args = { M32, M32 }, .arglen = 2,
-		.prefixes = 0xF2, .opcode = 0xA7, .oplen = 1,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0xA7, .oplen = 1,
 		.preffered = true,
 	}, {
 		.rex = 0x48,
 		.args = { M64, M64 }, .arglen = 2,
-		.prefixes = 0xF2, .opcode = 0xA7, .oplen = 1,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0xA7, .oplen = 1,
 	} } },
 	{ "repne scas", 5, (struct x64LookupActualIns[]) { {
 		.args = { M8 }, .arglen = 1,
-		.prefixes = 0xF2, .opcode = 0xAE, .oplen = 1,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0xAE, .oplen = 1,
 		.preffered = true,
 	}, {
 		.rex = 0x48,
 		.args = { M8 }, .arglen = 1,
-		.prefixes = 0xF2, .opcode = 0xAE, .oplen = 1,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0xAE, .oplen = 1,
 	}, {
 		.args = { M16 }, .arglen = 1,
-		.prefixes = 0xF266, .opcode = 0xAF, .oplen = 1,
+		.prefixes = 0xF266, .preflen = 2, .opcode = 0xAF, .oplen = 1,
 		.preffered = true,
 	}, {
 		.args = { M32 }, .arglen = 1,
-		.prefixes = 0xF2, .opcode = 0xAF, .oplen = 1,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0xAF, .oplen = 1,
 		.preffered = true,
 	}, {
 		.rex = 0x48,
 		.args = { M64 }, .arglen = 1,
-		.prefixes = 0xF2, .opcode = 0xAF, .oplen = 1,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0xAF, .oplen = 1,
 	} } },
 	{ "ret", 4, (struct x64LookupActualIns[]) { {
 		.opcode = 0xC3, .oplen = 1,
@@ -6935,7 +6964,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "roundpd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x093A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x093A0F, .oplen = 3,
 	} } },
 	{ "vroundpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -6949,7 +6978,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "roundps", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x083A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x083A0F, .oplen = 3,
 	} } },
 	{ "vroundps", 2, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -6963,7 +6992,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "roundsd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M64, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x0B3A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x0B3A0F, .oplen = 3,
 	} } },
 	{ "vroundsd", 1, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -6973,7 +7002,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "roundss", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M32, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x0A3A0F, .oplen = 3,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x0A3A0F, .oplen = 3,
 	} } },
 	{ "vroundss", 1, (struct x64LookupActualIns[]) { {
 		.vex = 0x80 | 3, .vex_byte = 0x79,
@@ -6997,7 +7026,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "rsqrtss", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x520F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x520F, .oplen = 2,
 	} } },
 	{ "vrsqrtss", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7a, .modrmreq = true, .modrmreg = true,
@@ -7235,7 +7264,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0x1C, .oplen = 1,
 	}, {
 		.args = { AX, IMM16 }, .arglen = 2, .imm_oper = 2,
-		.prefixes = 0x66, .opcode = 0x1D, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x1D, .oplen = 1,
 	}, {
 		.args = { EAX, IMM32 }, .arglen = 2, .imm_oper = 2,
 		.opcode = 0x1D, .oplen = 1,
@@ -7250,7 +7279,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x18,
 		.args = { R16 | M16, IMM16 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0x81, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x81, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrm = 0x18,
 		.args = { R32 | M32, IMM32 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
@@ -7287,7 +7316,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16 | M16, R16 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x19, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x19, .oplen = 1,
 		.preffered = true,
 	}, {
 		.modrmreq = true, .modrmreg = true,
@@ -7310,7 +7339,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x1B, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x1B, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -7325,7 +7354,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0xAE, .oplen = 1,
 	}, {
 		.args = { M16 }, .arglen = 1,
-		.prefixes = 0x66, .opcode = 0xAF, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xAF, .oplen = 1,
 	}, {
 		.args = { M32 }, .arglen = 1,
 		.opcode = 0xAF, .oplen = 1,
@@ -7338,7 +7367,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0xAE, .oplen = 1,
 	} } },
 	{ "scasw", 1, (struct x64LookupActualIns[]) { {
-		.prefixes = 0x66, .opcode = 0xAF, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xAF, .oplen = 1,
 	} } },
 	{ "scasd", 1, (struct x64LookupActualIns[]) { {
 		.opcode = 0xAF, .oplen = 1,
@@ -7507,10 +7536,10 @@ static const x64LookupGeneralIns x64Table[] = {
 	} } },
 	{ "shld", 6, (struct x64LookupActualIns[]) { {
 		.args = { R16 | M16, R16, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0xA40F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xA40F, .oplen = 2,
 	}, {
 		.args = { R16 | M16, R16, CL }, .arglen = 3, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0xA50F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xA50F, .oplen = 2,
 	}, {
 		.args = { R32 | M32, R32, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 1, .reg_oper = 2,
 		.opcode = 0xA40F, .oplen = 2,
@@ -7528,10 +7557,10 @@ static const x64LookupGeneralIns x64Table[] = {
 	} } },
 	{ "shrd", 6, (struct x64LookupActualIns[]) { {
 		.args = { R16 | M16, R16, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0xAC0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xAC0F, .oplen = 2,
 	}, {
 		.args = { R16 | M16, R16, CL }, .arglen = 3, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0xAD0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xAD0F, .oplen = 2,
 	}, {
 		.args = { R32 | M32, R32, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 1, .reg_oper = 2,
 		.opcode = 0xAC0F, .oplen = 2,
@@ -7550,7 +7579,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "shufpd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128, IMM8 }, .arglen = 3, .imm_oper = 3, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0xC60F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xC60F, .oplen = 2,
 	} } },
 	{ "vshufpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -7605,7 +7634,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "sqrtpd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x510F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x510F, .oplen = 2,
 	} } },
 	{ "vsqrtpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -7633,7 +7662,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "sqrtsd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0x510F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0x510F, .oplen = 2,
 	} } },
 	{ "vsqrtsd", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7b, .modrmreq = true, .modrmreg = true,
@@ -7643,7 +7672,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "sqrtss", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x510F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x510F, .oplen = 2,
 	} } },
 	{ "vsqrtss", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7a,
@@ -7674,7 +7703,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0xAA, .oplen = 1,
 	}, {
 		.args = { M16 }, .arglen = 1,
-		.prefixes = 0x66, .opcode = 0xAB, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xAB, .oplen = 1,
 	}, {
 		.args = { M32 }, .arglen = 1,
 		.opcode = 0xAB, .oplen = 1,
@@ -7687,7 +7716,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0xAA, .oplen = 1,
 	} } },
 	{ "stosw", 1, (struct x64LookupActualIns[]) { {
-		.prefixes = 0x66, .opcode = 0xAB, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xAB, .oplen = 1,
 	} } },
 	{ "stosd", 1, (struct x64LookupActualIns[]) { {
 		.opcode = 0xAB, .oplen = 1,
@@ -7706,7 +7735,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0x2C, .oplen = 1,
 	}, {
 		.args = { AX, IMM16 }, .arglen = 2, .imm_oper = 2,
-		.prefixes = 0x66, .opcode = 0x2D, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x2D, .oplen = 1,
 	}, {
 		.args = { EAX, IMM32 }, .arglen = 2, .imm_oper = 2,
 		.opcode = 0x2D, .oplen = 1,
@@ -7721,7 +7750,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x28,
 		.args = { R16 | M16, IMM16 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0x81, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x81, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrm = 0x28,
 		.args = { R32 | M32, IMM32 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
@@ -7758,7 +7787,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16 | M16, R16 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x29, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x29, .oplen = 1,
 		.preffered = true,
 	}, {
 		.modrmreq = true, .modrmreg = true,
@@ -7781,7 +7810,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x2B, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x2B, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -7794,7 +7823,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "subpd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x5C0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x5C0F, .oplen = 2,
 	} } },
 	{ "vsubpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -7822,7 +7851,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "subsd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF2, .opcode = 0x5C0F, .oplen = 2,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0x5C0F, .oplen = 2,
 	} } },
 	{ "vsubsd", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7b, .modrmreq = true, .modrmreg = true,
@@ -7832,7 +7861,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "subss", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0x5C0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x5C0F, .oplen = 2,
 	} } },
 	{ "vsubss", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x7a, .modrmreq = true, .modrmreg = true,
@@ -7867,7 +7896,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0xA8, .oplen = 1,
 	}, {
 		.args = { AX, IMM16 }, .arglen = 2, .imm_oper = 2,
-		.prefixes = 0x66, .opcode = 0xA9, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xA9, .oplen = 1,
 	}, {
 		.args = { EAX, IMM32 }, .arglen = 2, .imm_oper = 2,
 		.opcode = 0xA9, .oplen = 1,
@@ -7882,7 +7911,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x0,
 		.args = { R16 | M16, IMM16 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0xF7, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xF7, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrm = 0x0,
 		.args = { R32 | M32, IMM32 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
@@ -7902,7 +7931,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16 | M16, R16 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x85, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x85, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32 | M32, R32 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
@@ -7915,20 +7944,20 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "tzcnt", 3, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF366, .opcode = 0xBC0F, .oplen = 2,
+		.prefixes = 0xF366, .preflen = 2, .opcode = 0xBC0F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0xBC0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xBC0F, .oplen = 2,
 	}, {
 		.rex = 0x48, .modrmreq = true, .modrmreg = true,
 		.args = { R64, R64 | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0xF3, .opcode = 0xBC0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xBC0F, .oplen = 2,
 	} } },
 	{ "ucomisd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M64 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x2E0F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x2E0F, .oplen = 2,
 	} } },
 	{ "vucomisd", 1, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -7951,7 +7980,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "unpckhpd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x150F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x150F, .oplen = 2,
 	} } },
 	{ "vunpckhpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -7979,7 +8008,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "unpcklpd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x140F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x140F, .oplen = 2,
 	} } },
 	{ "vunpcklpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -8853,10 +8882,10 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0x77, .oplen = 1,
 	} } },
 	{ "wait", 1, (struct x64LookupActualIns[]) { {
-		.prefixes = 0x9B, .opcode = 0x0, .oplen = 0,
+		.prefixes = 0x9B, .preflen = 1, .opcode = 0x0, .oplen = 0,
 	} } },
 	{ "fwait", 1, (struct x64LookupActualIns[]) { {
-		.prefixes = 0x9B, .opcode = 0x0, .oplen = 0,
+		.prefixes = 0x9B, .preflen = 1, .opcode = 0x0, .oplen = 0,
 	} } },
 	{ "wbinvd", 1, (struct x64LookupActualIns[]) { {
 		.opcode = 0x090F, .oplen = 2,
@@ -8864,29 +8893,29 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "wrfsbase", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x10,
 		.args = { R32 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0xF3, .opcode = 0xAE0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xAE0F, .oplen = 2,
 	}, {
 		.rex = 0x48, .modrmreq = true, .modrm = 0x10,
 		.args = { R64 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0xF3, .opcode = 0xAE0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xAE0F, .oplen = 2,
 	} } },
 	{ "wrgsbase", 2, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrm = 0x18,
 		.args = { R32 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0xF3, .opcode = 0xAE0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xAE0F, .oplen = 2,
 	}, {
 		.rex = 0x48, .modrmreq = true, .modrm = 0x18,
 		.args = { R64 }, .arglen = 1, .mem_oper = 1,
-		.prefixes = 0xF3, .opcode = 0xAE0F, .oplen = 2,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0xAE0F, .oplen = 2,
 	} } },
 	{ "wrmsr", 1, (struct x64LookupActualIns[]) { {
 		.opcode = 0x300F, .oplen = 2,
 	} } },
 	{ "xacquire", 1, (struct x64LookupActualIns[]) { {
-		.prefixes = 0xF2, .opcode = 0x0, .oplen = 0,
+		.prefixes = 0xF2, .preflen = 1, .opcode = 0x0, .oplen = 0,
 	} } },
 	{ "xrelease", 1, (struct x64LookupActualIns[]) { {
-		.prefixes = 0xF3, .opcode = 0x0, .oplen = 0,
+		.prefixes = 0xF3, .preflen = 1, .opcode = 0x0, .oplen = 0,
 	} } },
 	{ "xabort", 1, (struct x64LookupActualIns[]) { {
 		.args = { IMM8 }, .arglen = 1, .imm_oper = 1,
@@ -8903,7 +8932,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16 | M16, R16 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0xC10F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0xC10F, .oplen = 2,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32 | M32, R32 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
@@ -8919,10 +8948,10 @@ static const x64LookupGeneralIns x64Table[] = {
 	} } },
 	{ "xchg", 16, (struct x64LookupActualIns[]) { {
 		.args = { AX, R16 }, .arglen = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x90, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x90, .oplen = 1,
 	}, {
 		.args = { R16, AX }, .arglen = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x90, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x90, .oplen = 1,
 	}, {
 		.args = { EAX, R32 }, .arglen = 2, .reg_oper = 1,
 		.opcode = 0x90, .oplen = 1,
@@ -8958,12 +8987,12 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16 | M16, R16 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x87, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x87, .oplen = 1,
 		.preffered = true,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x87, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x87, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32 | M32, R32 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
@@ -9002,7 +9031,7 @@ static const x64LookupGeneralIns x64Table[] = {
 		.opcode = 0x34, .oplen = 1,
 	}, {
 		.args = { AX, IMM16 }, .arglen = 2, .imm_oper = 2,
-		.prefixes = 0x66, .opcode = 0x35, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x35, .oplen = 1,
 	}, {
 		.args = { EAX, IMM32 }, .arglen = 2, .imm_oper = 2,
 		.opcode = 0x35, .oplen = 1,
@@ -9017,7 +9046,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrm = 0x30,
 		.args = { R16 | M16, IMM16 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
-		.prefixes = 0x66, .opcode = 0x81, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x81, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrm = 0x30,
 		.args = { R32 | M32, IMM32 }, .arglen = 2, .imm_oper = 2, .mem_oper = 1,
@@ -9054,7 +9083,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16 | M16, R16 }, .arglen = 2, .mem_oper = 1, .reg_oper = 2,
-		.prefixes = 0x66, .opcode = 0x31, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x31, .oplen = 1,
 		.preffered = true,
 	}, {
 		.modrmreq = true, .modrmreg = true,
@@ -9077,7 +9106,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R16, R16 | M16 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x33, .oplen = 1,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x33, .oplen = 1,
 	}, {
 		.modrmreq = true, .modrmreg = true,
 		.args = { R32, R32 | M32 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
@@ -9090,7 +9119,7 @@ static const x64LookupGeneralIns x64Table[] = {
 	{ "xorpd", 1, (struct x64LookupActualIns[]) { {
 		.modrmreq = true, .modrmreg = true,
 		.args = { XMM, XMM | M128 }, .arglen = 2, .mem_oper = 2, .reg_oper = 1,
-		.prefixes = 0x66, .opcode = 0x570F, .oplen = 2,
+		.prefixes = 0x66, .preflen = 1, .opcode = 0x570F, .oplen = 2,
 	} } },
 	{ "vxorpd", 2, (struct x64LookupActualIns[]) { {
 		.vex = 1, .vex_byte = 0x79, .modrmreq = true, .modrmreg = true,
@@ -9262,7 +9291,7 @@ static inline x64LookupActualIns* identify(const x64Ins* ins) {
     else if(ins->params[immplace - 1].value > 0x10000) insoperands[immplace - 1] = IMM32 | IMM8 | IMM16;
   }
   // Adds more specificity to the ambiguous rel() macro's REL32 | REL8
-  else if(ins->op >= JA && ins->op <= JMP && insoperands[0] & REL8) {
+  else if(insoperands[0] & REL8) {
     // 8 * 15 = 120, which is the maximum value for a REL8. This is suboptimal but fast enough and simple for now.
     if((i32) ins->params[0].value > 8 || (i32) ins->params[0].value < -8) insoperands[0] = REL32;
     else insoperands[0] = REL8;
@@ -9275,16 +9304,17 @@ next:
     if(unresins->ins[i].arglen != operandnum) continue;
     x64LookupActualIns* currentins = unresins->ins + i;
 
-    bool morespecific = false;
-    for(u32 j = 0; j < operandnum; j ++)
+    // bool morespecific = false;
+    for(u32 j = 0; j < operandnum; j ++) {
       if(!(currentins->args[j] & insoperands[j])) goto cont;
-      else if(resolved && (
-          resolved->args[j] < (currentins->args[j] & insoperands[j]) || // Generally, more specific arguments have a higher set bit than less specific ones.
-          (resolved->modrmreq && !currentins->modrmreq))) morespecific = true;
+      // else if(resolved && (
+          // resolved->args[j] < (currentins->args[j] & insoperands[j]) || // Generally, more specific arguments have a higher set bit than less specific ones.
+          // (resolved->modrmreq && !currentins->modrmreq))) morespecific = true;
+    }
     
     if(preferred && !currentins->preffered) continue;
     else if(currentins->preffered) preferred = true; // this order is necessary, since the first if validates there's no preference, and the last if only works if there's no preference
-    else if(resolved && !morespecific) continue;
+    else if(resolved) continue;
     resolved = currentins;
 cont:
     continue;
@@ -9369,13 +9399,17 @@ static u32 encode(const x64Ins* ins, x64LookupActualIns* res, u8* opcode_dest) {
       opcode_dest += 2;
     }
   }
-  // Segment Register for memory operands - Prefix group 2 (GCC Ordering)
-  if(res->mem_oper && ins->params[res->mem_oper].type & ((u64) 0x7 << 56))
-    *opcode_dest = ((u8[]) { 0x26, 0x2e, 0x36, 0x3e, 0x64, 0x65 })[((ins->params[res->mem_oper].type >> 56) & 0x7) - 1], opcode_dest ++;
   
-  // 67H prefix - Prefix group 4 (GCC Ordering)
-  if(res->mem_oper && (ins->params[res->mem_oper - 1].value & ((u64) 0x1 << 60)))
-    *opcode_dest = 0x67, opcode_dest ++;
+  if(res->mem_oper) {
+    
+    // Segment Register for memory operands - Prefix group 2 (GCC Ordering)
+    if(ins->params[res->mem_oper - 1].type & ((u64) 0x7 << 56))
+      *opcode_dest = ((u8[]) { 0x26, 0x2e, 0x36, 0x3e, 0x64, 0x65 })[((ins->params[res->mem_oper - 1].type >> 56) & 0x7) - 1], opcode_dest ++;
+  
+    // 67H prefix - Prefix group 4 (GCC Ordering)
+    if(ins->params[res->mem_oper - 1].value & ((u64) 0x1 << 60))
+      *opcode_dest = 0x67, opcode_dest ++;
+  }
 
   // Only for Normal **NON** VEX and EVEX instructions
   if(!res->vex) {
@@ -9383,7 +9417,7 @@ static u32 encode(const x64Ins* ins, x64LookupActualIns* res, u8* opcode_dest) {
     // 66H prefix - Prefix group 3 (GCC Ordering) + FWAIT and Prefix Group 1
     if(res->prefixes) {
       *(u32*) opcode_dest = res->prefixes;
-      opcode_dest += 1 + (res->prefixes >= 0x100) + (res->prefixes >= 0x10000);
+      opcode_dest += res->preflen;
     }
 
     // REX prefix
@@ -9410,7 +9444,7 @@ static u32 encode(const x64Ins* ins, x64LookupActualIns* res, u8* opcode_dest) {
   }
 
   // opcode
-  *(u32*)opcode_dest = res->opcode;
+  *(u32*) opcode_dest = res->opcode;
   opcode_dest += res->oplen;
 
   // ModR/M | MOD = XX, REG = XXX, RM = XXX | https://wiki.osdev.org/X86-64_Instruction_Encoding#:~:text=r/m-,32/64%2Dbit%20addressing,-These%20are%20the
@@ -9605,8 +9639,8 @@ char* x64stringify(const x64 p, u32 num) {
       else if(p[curins].params[i].type & (X64_ALLMEMMASK | allfarmask) && p[curins].params[i].value & ((u64)1 << 62))
         cursize += sprintf(code + cursize, "[$%+d]", (u32) p[curins].params[i].value);
 
-      else if(p[curins].params[i].type == X64_LABEL_REF)
-        cursize += sprintf(code + cursize, "%s", p[curins].label_name);
+      // else if(p[curins].params[i].type == X64_LABEL_REF)
+      //   cursize += sprintf(code + cursize, "%s", p[curins].label_name);
 
       else if(p[curins].params[i].type & (X64_ALLMEMMASK | allfarmask)) {
 
@@ -9858,7 +9892,7 @@ error:
   return NULL;
 }
 
-#if defined _WIN32 | defined __CYGWIN__
+#if defined _WIN32 || defined __CYGWIN__
 
 // https://learn.microsoft.com/en-us/windows/win32/memory/memory-protection-constants
 #define PAGE_EXECUTE_READ 0x20
@@ -9888,6 +9922,7 @@ void (*x64exec(void* mem, u32 size))() {
 
 void x64exec_free(void* buf, u32 size) {
   VirtualFree(buf, 0, MEM_RELEASE);
+  (void)size;
 }
 
 #else

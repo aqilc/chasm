@@ -65,50 +65,16 @@ typedef enum x64Op x64Op;
 
 struct x64Operand {
 	x64OperandType type;
-	union {
-		int64_t value;
-		char* label_name;
-	};
+	int64_t value;
 };
 typedef struct x64Operand x64Operand;
 
 struct x64Ins {
 	x64Op op;
-	union {
-		x64Operand params[4];
-		char* label_name;
-	};
+	x64Operand params[4];
 };
 typedef struct x64Ins x64Ins;
 typedef x64Ins x64[];
-
-struct x64LookupGeneralIns {
-	char* name;
-	unsigned int numactualins;
-	struct x64LookupActualIns {
-		uint8_t mem_oper; // Index of memory operand if there is one + 1
-		uint8_t reg_oper; // Index of register operand if there is one + 1
-		uint8_t rel_oper; // Index of relative jump operand if there is one + 1
-		uint8_t vex_oper; // Index of VEX operand if there is one + 1
-    uint8_t imm_oper; // Index of immediate operand if there is one + 1
-    uint8_t is4_oper; // Index of 4-byte immediate operand if there is one + 1
-		uint8_t rex;
-		uint8_t oplen;
-		uint8_t vex; // opcode_map if specified
-		uint8_t vex_byte;
-    uint8_t modrm;
-		bool modrmreq;
-		bool modrmreg;
-		bool preffered;
-		uint8_t base_size;
-		uint8_t arglen;
-		uint32_t opcode;
-		uint32_t prefixes;
-		x64OperandType args[4];
-	}* ins;
-};
-typedef struct x64LookupActualIns x64LookupActualIns;
-typedef struct x64LookupGeneralIns x64LookupGeneralIns;
 
 #define imm(value) (x64Operand) { ((value) == 1 ? ONE : 0) | IMM8 | IMM16 | IMM32 | IMM64, (value) }
 #define im64(value) (x64Operand) { ((value) == 1 ? ONE : 0) | IMM64, (value) }
