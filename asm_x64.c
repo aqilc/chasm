@@ -43,7 +43,7 @@ struct x64LookupGeneralIns {
 		bool modrmreq;
 		bool modrmreg;
 		bool preffered;
-		uint8_t base_size;
+		// uint8_t base_size;
 		uint8_t arglen;
 		uint32_t opcode;
 		uint32_t prefixes;

@@ -66,63 +66,81 @@ typedef enum x64Op x64Op;
 struct x64Operand {
 	x64OperandType type;
 	int64_t value;
+#ifdef __cplusplus
+	constexpr x64Operand() : type(NONE), value(0) {}
+	constexpr x64Operand(uint64_t t): type(static_cast<x64OperandType>(t)), value(0) {}
+	constexpr x64Operand(uint64_t t, uint64_t v): type(static_cast<x64OperandType>(t)), value(v) {}
+#endif
 };
 typedef struct x64Operand x64Operand;
 
 struct x64Ins {
 	x64Op op;
 	x64Operand params[4];
+#ifdef __cplusplus
+	constexpr x64Ins(x64Op o, x64Operand p1, x64Operand p2, x64Operand p3, x64Operand p4) : op(o), params { p1, p2, p3, p4 } {}
+	constexpr x64Ins(x64Op o, x64Operand p1, x64Operand p2, x64Operand p3) : op(o), params { p1, p2, p3 } {}
+	constexpr x64Ins(x64Op o, x64Operand p1, x64Operand p2) : op(o), params { p1, p2 } {}
+	constexpr x64Ins(x64Op o, x64Operand p1) : op(o), params { p1 } {}
+	constexpr x64Ins(x64Op o) : op(o) {}
+#endif
 };
 typedef struct x64Ins x64Ins;
 typedef x64Ins x64[];
 
-#define imm(value) (x64Operand) { ((value) == 1 ? ONE : 0) | IMM8 | IMM16 | IMM32 | IMM64, (value) }
-#define im64(value) (x64Operand) { ((value) == 1 ? ONE : 0) | IMM64, (value) }
-#define im32(value) (x64Operand) { ((value) == 1 ? ONE : 0) | IMM32, (value) }
-#define im16(value) (x64Operand) { ((value) == 1 ? ONE : 0) | IMM16, (value) }
-#define im8(value) (x64Operand) { ((value) == 1 ? ONE : 0) | IMM8, (value) }
-#define imptr(value) (x64Operand) { IMM64, (uint64_t)(void*)(value) }
+#ifdef __cplusplus
+#define X64OPERAND_CAST(...) x64Operand(__VA_ARGS__)
+#else
+#define X64OPERAND_CAST(...) (x64Operand) { __VA_ARGS__ }
+#endif
 
-#define al (x64Operand) { AL | R8 }
-#define cl (x64Operand) { CL | R8, 1 }
-#define dl (x64Operand) { R8, 2 }
-#define bl (x64Operand) { R8, 3 }
+#define imm(value) X64OPERAND_CAST( ((value) == 1 ? ONE : 0) | IMM8 | IMM16 | IMM32 | IMM64, (value) )
+#define im64(value) X64OPERAND_CAST( ((value) == 1 ? ONE : 0) | IMM64, (value) )
+#define im32(value) X64OPERAND_CAST( ((value) == 1 ? ONE : 0) | IMM32, (value) )
+#define im16(value) X64OPERAND_CAST( ((value) == 1 ? ONE : 0) | IMM16, (value) )
+#define im8(value) X64OPERAND_CAST( ((value) == 1 ? ONE : 0) | IMM8, (value) )
+#define imptr(value) X64OPERAND_CAST( IMM64, (uint64_t)(void*)(value) )
 
-#define bpl (x64Operand) { R8, 4 }
-#define spl (x64Operand) { R8, 5 }
-#define sil (x64Operand) { R8, 6 }
-#define dil (x64Operand) { R8, 7 }
-#define r8b (x64Operand) { R8, 8 }
-#define r9b (x64Operand) { R8, 9 }
-#define r10b (x64Operand) { R8, 10 }
-#define r11b (x64Operand) { R8, 11 }
-#define r12b (x64Operand) { R8, 12 }
-#define r13b (x64Operand) { R8, 13 }
-#define r14b (x64Operand) { R8, 14 }
-#define r15b (x64Operand) { R8, 15 }
+#define al X64OPERAND_CAST( AL | R8 )
+#define cl X64OPERAND_CAST( CL | R8, 1 )
+#define dl X64OPERAND_CAST( R8, 2 )
+#define bl X64OPERAND_CAST( R8, 3 )
 
-#define ah (x64Operand) { RH, 4 }
-#define ch (x64Operand) { RH, 5 }
-#define dh (x64Operand) { RH, 6 }
-#define bh (x64Operand) { RH, 7 }
+#define bpl X64OPERAND_CAST( R8, 4 )
+#define spl X64OPERAND_CAST( R8, 5 )
+#define sil X64OPERAND_CAST( R8, 6 )
+#define dil X64OPERAND_CAST( R8, 7 )
+#define r8b X64OPERAND_CAST( R8, 8 )
+#define r9b X64OPERAND_CAST( R8, 9 )
+#define r10b X64OPERAND_CAST( R8, 10 )
+#define r11b X64OPERAND_CAST( R8, 11 )
+#define r12b X64OPERAND_CAST( R8, 12 )
+#define r13b X64OPERAND_CAST( R8, 13 )
+#define r14b X64OPERAND_CAST( R8, 14 )
+#define r15b X64OPERAND_CAST( R8, 15 )
 
-#define ax (x64Operand) { AX | R16 }
-#define cx (x64Operand) { R16, 1 }
-#define dx (x64Operand) { DX | R16, 2 }
-#define bx (x64Operand) { R16, 3 }
+#define ah X64OPERAND_CAST( RH, 4 )
+#define ch X64OPERAND_CAST( RH, 5 )
+#define dh X64OPERAND_CAST( RH, 6 )
+#define bh X64OPERAND_CAST( RH, 7 )
 
-#define si (x64Operand) { R16, 4 }
-#define di (x64Operand) { R16, 5 }
-#define bp (x64Operand) { R16, 6 }
-#define sp (x64Operand) { R16, 7 }
-#define r8w (x64Operand) { R16, 8 }
-#define r9w (x64Operand) { R16, 9 }
-#define r10w (x64Operand) { R16, 10 }
-#define r11w (x64Operand) { R16, 11 }
-#define r12w (x64Operand) { R16, 12 }
-#define r13w (x64Operand) { R16, 13 }
-#define r14w (x64Operand) { R16, 14 }
-#define r15w (x64Operand) { R16, 15 }
+#define ax X64OPERAND_CAST( AX | R16 )
+#define cx X64OPERAND_CAST( R16, 1 )
+#define dx X64OPERAND_CAST( DX | R16, 2 )
+#define bx X64OPERAND_CAST( R16, 3 )
+
+#define si X64OPERAND_CAST( R16, 4 )
+#define di X64OPERAND_CAST( R16, 5 )
+#define bp X64OPERAND_CAST( R16, 6 )
+#define sp X64OPERAND_CAST( R16, 7 )
+#define r8w X64OPERAND_CAST( R16, 8 )
+#define r9w X64OPERAND_CAST( R16, 9 )
+#define r10w X64OPERAND_CAST( R16, 10 )
+#define r11w X64OPERAND_CAST( R16, 11 )
+#define r12w X64OPERAND_CAST( R16, 12 )
+#define r13w X64OPERAND_CAST( R16, 13 )
+#define r14w X64OPERAND_CAST( R16, 14 )
+#define r15w X64OPERAND_CAST( R16, 15 )
 
 enum x64RegisterReference: uint32_t {
 	// DO NOT CHANGE THEIR ORDER
@@ -137,194 +155,194 @@ enum x64RegisterReference: uint32_t {
 	$riprel = 0x30, $none = 0xFFF0
 };
 
-#define eax (x64Operand) { EAX | R32, $eax }
-#define ecx (x64Operand) { R32, $ecx }
-#define edx (x64Operand) { R32, $edx }
-#define ebx (x64Operand) { R32, $ebx }
-#define esp (x64Operand) { R32, $esp }
-#define ebp (x64Operand) { R32, $ebp }
-#define esi (x64Operand) { R32, $esi }
-#define edi (x64Operand) { R32, $edi }
-#define r8d (x64Operand) { R32, $r8d }
-#define r9d (x64Operand) { R32, $r9d }
-#define r10d (x64Operand) { R32, $r10d }
-#define r11d (x64Operand) { R32, $r11d }
-#define r12d (x64Operand) { R32, $r12d }
-#define r13d (x64Operand) { R32, $r13d }
-#define r14d (x64Operand) { R32, $r14d }
-#define r15d (x64Operand) { R32, $r15d }
+#define eax X64OPERAND_CAST( EAX | R32, $eax )
+#define ecx X64OPERAND_CAST( R32, $ecx )
+#define edx X64OPERAND_CAST( R32, $edx )
+#define ebx X64OPERAND_CAST( R32, $ebx )
+#define esp X64OPERAND_CAST( R32, $esp )
+#define ebp X64OPERAND_CAST( R32, $ebp )
+#define esi X64OPERAND_CAST( R32, $esi )
+#define edi X64OPERAND_CAST( R32, $edi )
+#define r8d X64OPERAND_CAST( R32, $r8d )
+#define r9d X64OPERAND_CAST( R32, $r9d )
+#define r10d X64OPERAND_CAST( R32, $r10d )
+#define r11d X64OPERAND_CAST( R32, $r11d )
+#define r12d X64OPERAND_CAST( R32, $r12d )
+#define r13d X64OPERAND_CAST( R32, $r13d )
+#define r14d X64OPERAND_CAST( R32, $r14d )
+#define r15d X64OPERAND_CAST( R32, $r15d )
 
-#define rax (x64Operand) { RAX | R64, 0x0 }
-#define rcx (x64Operand) { R64, 0x1 }
-#define rdx (x64Operand) { R64, 0x2 }
-#define rbx (x64Operand) { R64, 0x3 }
-#define rsp (x64Operand) { R64, 0x4 }
-#define rbp (x64Operand) { R64, 0x5 }
-#define rsi (x64Operand) { R64, 0x6 }
-#define rdi (x64Operand) { R64, 0x7 }
-#define r8 (x64Operand) { R64, 0x8 }
-#define r9 (x64Operand) { R64, 0x9 }
-#define r10 (x64Operand) { R64, 0xA }
-#define r11 (x64Operand) { R64, 0xB }
-#define r12 (x64Operand) { R64, 0xC }
-#define r13 (x64Operand) { R64, 0xD }
-#define r14 (x64Operand) { R64, 0xE }
-#define r15 (x64Operand) { R64, 0xF }
+#define rax X64OPERAND_CAST( RAX | R64, 0x0 )
+#define rcx X64OPERAND_CAST( R64, 0x1 )
+#define rdx X64OPERAND_CAST( R64, 0x2 )
+#define rbx X64OPERAND_CAST( R64, 0x3 )
+#define rsp X64OPERAND_CAST( R64, 0x4 )
+#define rbp X64OPERAND_CAST( R64, 0x5 )
+#define rsi X64OPERAND_CAST( R64, 0x6 )
+#define rdi X64OPERAND_CAST( R64, 0x7 )
+#define r8 X64OPERAND_CAST( R64, 0x8 )
+#define r9 X64OPERAND_CAST( R64, 0x9 )
+#define r10 X64OPERAND_CAST( R64, 0xA )
+#define r11 X64OPERAND_CAST( R64, 0xB )
+#define r12 X64OPERAND_CAST( R64, 0xC )
+#define r13 X64OPERAND_CAST( R64, 0xD )
+#define r14 X64OPERAND_CAST( R64, 0xE )
+#define r15 X64OPERAND_CAST( R64, 0xF )
 
 // SSE and AVX registers
-#define xmm0 (x64Operand) { XMM_0 | XMM, 0 }
-#define xmm1 (x64Operand) { XMM, 1 }
-#define xmm2 (x64Operand) { XMM, 2 }
-#define xmm3 (x64Operand) { XMM, 3 }
-#define xmm4 (x64Operand) { XMM, 4 }
-#define xmm5 (x64Operand) { XMM, 5 }
-#define xmm6 (x64Operand) { XMM, 6 }
-#define xmm7 (x64Operand) { XMM, 7 }
-#define xmm8 (x64Operand) { XMM, 8 }
-#define xmm9 (x64Operand) { XMM, 9 }
-#define xmm10 (x64Operand) { XMM, 10 }
-#define xmm11 (x64Operand) { XMM, 11 }
-#define xmm12 (x64Operand) { XMM, 12 }
-#define xmm13 (x64Operand) { XMM, 13 }
-#define xmm14 (x64Operand) { XMM, 14 }
-#define xmm15 (x64Operand) { XMM, 15 }
-#define xmm16 (x64Operand) { XMM, 16 }
-#define xmm17 (x64Operand) { XMM, 17 }
-#define xmm18 (x64Operand) { XMM, 18 }
-#define xmm19 (x64Operand) { XMM, 19 }
-#define xmm20 (x64Operand) { XMM, 20 }
-#define xmm21 (x64Operand) { XMM, 21 }
-#define xmm22 (x64Operand) { XMM, 22 }
-#define xmm23 (x64Operand) { XMM, 23 }
-#define xmm24 (x64Operand) { XMM, 24 }
-#define xmm25 (x64Operand) { XMM, 25 }
-#define xmm26 (x64Operand) { XMM, 26 }
-#define xmm27 (x64Operand) { XMM, 27 }
-#define xmm28 (x64Operand) { XMM, 28 }
-#define xmm29 (x64Operand) { XMM, 29 }
-#define xmm30 (x64Operand) { XMM, 30 }
-#define xmm31 (x64Operand) { XMM, 31 }
+#define xmm0 X64OPERAND_CAST( XMM_0 | XMM, 0 )
+#define xmm1 X64OPERAND_CAST( XMM, 1 )
+#define xmm2 X64OPERAND_CAST( XMM, 2 )
+#define xmm3 X64OPERAND_CAST( XMM, 3 )
+#define xmm4 X64OPERAND_CAST( XMM, 4 )
+#define xmm5 X64OPERAND_CAST( XMM, 5 )
+#define xmm6 X64OPERAND_CAST( XMM, 6 )
+#define xmm7 X64OPERAND_CAST( XMM, 7 )
+#define xmm8 X64OPERAND_CAST( XMM, 8 )
+#define xmm9 X64OPERAND_CAST( XMM, 9 )
+#define xmm10 X64OPERAND_CAST( XMM, 10 )
+#define xmm11 X64OPERAND_CAST( XMM, 11 )
+#define xmm12 X64OPERAND_CAST( XMM, 12 )
+#define xmm13 X64OPERAND_CAST( XMM, 13 )
+#define xmm14 X64OPERAND_CAST( XMM, 14 )
+#define xmm15 X64OPERAND_CAST( XMM, 15 )
+#define xmm16 X64OPERAND_CAST( XMM, 16 )
+#define xmm17 X64OPERAND_CAST( XMM, 17 )
+#define xmm18 X64OPERAND_CAST( XMM, 18 )
+#define xmm19 X64OPERAND_CAST( XMM, 19 )
+#define xmm20 X64OPERAND_CAST( XMM, 20 )
+#define xmm21 X64OPERAND_CAST( XMM, 21 )
+#define xmm22 X64OPERAND_CAST( XMM, 22 )
+#define xmm23 X64OPERAND_CAST( XMM, 23 )
+#define xmm24 X64OPERAND_CAST( XMM, 24 )
+#define xmm25 X64OPERAND_CAST( XMM, 25 )
+#define xmm26 X64OPERAND_CAST( XMM, 26 )
+#define xmm27 X64OPERAND_CAST( XMM, 27 )
+#define xmm28 X64OPERAND_CAST( XMM, 28 )
+#define xmm29 X64OPERAND_CAST( XMM, 29 )
+#define xmm30 X64OPERAND_CAST( XMM, 30 )
+#define xmm31 X64OPERAND_CAST( XMM, 31 )
 
-#define ymm0 (x64Operand) { YMM, 0 }
-#define ymm1 (x64Operand) { YMM, 1 }
-#define ymm2 (x64Operand) { YMM, 2 }
-#define ymm3 (x64Operand) { YMM, 3 }
-#define ymm4 (x64Operand) { YMM, 4 }
-#define ymm5 (x64Operand) { YMM, 5 }
-#define ymm6 (x64Operand) { YMM, 6 }
-#define ymm7 (x64Operand) { YMM, 7 }
-#define ymm8 (x64Operand) { YMM, 8 }
-#define ymm9 (x64Operand) { YMM, 9 }
-#define ymm10 (x64Operand) { YMM, 10 }
-#define ymm11 (x64Operand) { YMM, 11 }
-#define ymm12 (x64Operand) { YMM, 12 }
-#define ymm13 (x64Operand) { YMM, 13 }
-#define ymm14 (x64Operand) { YMM, 14 }
-#define ymm15 (x64Operand) { YMM, 15 }
-#define ymm16 (x64Operand) { YMM, 16 }
-#define ymm17 (x64Operand) { YMM, 17 }
-#define ymm18 (x64Operand) { YMM, 18 }
-#define ymm19 (x64Operand) { YMM, 19 }
-#define ymm20 (x64Operand) { YMM, 20 }
-#define ymm21 (x64Operand) { YMM, 21 }
-#define ymm22 (x64Operand) { YMM, 22 }
-#define ymm23 (x64Operand) { YMM, 23 }
-#define ymm24 (x64Operand) { YMM, 24 }
-#define ymm25 (x64Operand) { YMM, 25 }
-#define ymm26 (x64Operand) { YMM, 26 }
-#define ymm27 (x64Operand) { YMM, 27 }
-#define ymm28 (x64Operand) { YMM, 28 }
-#define ymm29 (x64Operand) { YMM, 29 }
-#define ymm30 (x64Operand) { YMM, 30 }
-#define ymm31 (x64Operand) { YMM, 31 }
+#define ymm0 X64OPERAND_CAST( YMM, 0 )
+#define ymm1 X64OPERAND_CAST( YMM, 1 )
+#define ymm2 X64OPERAND_CAST( YMM, 2 )
+#define ymm3 X64OPERAND_CAST( YMM, 3 )
+#define ymm4 X64OPERAND_CAST( YMM, 4 )
+#define ymm5 X64OPERAND_CAST( YMM, 5 )
+#define ymm6 X64OPERAND_CAST( YMM, 6 )
+#define ymm7 X64OPERAND_CAST( YMM, 7 )
+#define ymm8 X64OPERAND_CAST( YMM, 8 )
+#define ymm9 X64OPERAND_CAST( YMM, 9 )
+#define ymm10 X64OPERAND_CAST( YMM, 10 )
+#define ymm11 X64OPERAND_CAST( YMM, 11 )
+#define ymm12 X64OPERAND_CAST( YMM, 12 )
+#define ymm13 X64OPERAND_CAST( YMM, 13 )
+#define ymm14 X64OPERAND_CAST( YMM, 14 )
+#define ymm15 X64OPERAND_CAST( YMM, 15 )
+#define ymm16 X64OPERAND_CAST( YMM, 16 )
+#define ymm17 X64OPERAND_CAST( YMM, 17 )
+#define ymm18 X64OPERAND_CAST( YMM, 18 )
+#define ymm19 X64OPERAND_CAST( YMM, 19 )
+#define ymm20 X64OPERAND_CAST( YMM, 20 )
+#define ymm21 X64OPERAND_CAST( YMM, 21 )
+#define ymm22 X64OPERAND_CAST( YMM, 22 )
+#define ymm23 X64OPERAND_CAST( YMM, 23 )
+#define ymm24 X64OPERAND_CAST( YMM, 24 )
+#define ymm25 X64OPERAND_CAST( YMM, 25 )
+#define ymm26 X64OPERAND_CAST( YMM, 26 )
+#define ymm27 X64OPERAND_CAST( YMM, 27 )
+#define ymm28 X64OPERAND_CAST( YMM, 28 )
+#define ymm29 X64OPERAND_CAST( YMM, 29 )
+#define ymm30 X64OPERAND_CAST( YMM, 30 )
+#define ymm31 X64OPERAND_CAST( YMM, 31 )
 
-#define zmm0 (x64Operand) { ZMM, 0 }
-#define zmm1 (x64Operand) { ZMM, 1 }
-#define zmm2 (x64Operand) { ZMM, 2 }
-#define zmm3 (x64Operand) { ZMM, 3 }
-#define zmm4 (x64Operand) { ZMM, 4 }
-#define zmm5 (x64Operand) { ZMM, 5 }
-#define zmm6 (x64Operand) { ZMM, 6 }
-#define zmm7 (x64Operand) { ZMM, 7 }
-#define zmm8 (x64Operand) { ZMM, 8 }
-#define zmm9 (x64Operand) { ZMM, 9 }
-#define zmm10 (x64Operand) { ZMM, 10 }
-#define zmm11 (x64Operand) { ZMM, 11 }
-#define zmm12 (x64Operand) { ZMM, 12 }
-#define zmm13 (x64Operand) { ZMM, 13 }
-#define zmm14 (x64Operand) { ZMM, 14 }
-#define zmm15 (x64Operand) { ZMM, 15 }
-#define zmm16 (x64Operand) { ZMM, 16 }
-#define zmm17 (x64Operand) { ZMM, 17 }
-#define zmm18 (x64Operand) { ZMM, 18 }
-#define zmm19 (x64Operand) { ZMM, 19 }
-#define zmm20 (x64Operand) { ZMM, 20 }
-#define zmm21 (x64Operand) { ZMM, 21 }
-#define zmm22 (x64Operand) { ZMM, 22 }
-#define zmm23 (x64Operand) { ZMM, 23 }
-#define zmm24 (x64Operand) { ZMM, 24 }
-#define zmm25 (x64Operand) { ZMM, 25 }
-#define zmm26 (x64Operand) { ZMM, 26 }
-#define zmm27 (x64Operand) { ZMM, 27 }
-#define zmm28 (x64Operand) { ZMM, 28 }
-#define zmm29 (x64Operand) { ZMM, 29 }
-#define zmm30 (x64Operand) { ZMM, 30 }
-#define zmm31 (x64Operand) { ZMM, 31 }
+#define zmm0 X64OPERAND_CAST( ZMM, 0 )
+#define zmm1 X64OPERAND_CAST( ZMM, 1 )
+#define zmm2 X64OPERAND_CAST( ZMM, 2 )
+#define zmm3 X64OPERAND_CAST( ZMM, 3 )
+#define zmm4 X64OPERAND_CAST( ZMM, 4 )
+#define zmm5 X64OPERAND_CAST( ZMM, 5 )
+#define zmm6 X64OPERAND_CAST( ZMM, 6 )
+#define zmm7 X64OPERAND_CAST( ZMM, 7 )
+#define zmm8 X64OPERAND_CAST( ZMM, 8 )
+#define zmm9 X64OPERAND_CAST( ZMM, 9 )
+#define zmm10 X64OPERAND_CAST( ZMM, 10 )
+#define zmm11 X64OPERAND_CAST( ZMM, 11 )
+#define zmm12 X64OPERAND_CAST( ZMM, 12 )
+#define zmm13 X64OPERAND_CAST( ZMM, 13 )
+#define zmm14 X64OPERAND_CAST( ZMM, 14 )
+#define zmm15 X64OPERAND_CAST( ZMM, 15 )
+#define zmm16 X64OPERAND_CAST( ZMM, 16 )
+#define zmm17 X64OPERAND_CAST( ZMM, 17 )
+#define zmm18 X64OPERAND_CAST( ZMM, 18 )
+#define zmm19 X64OPERAND_CAST( ZMM, 19 )
+#define zmm20 X64OPERAND_CAST( ZMM, 20 )
+#define zmm21 X64OPERAND_CAST( ZMM, 21 )
+#define zmm22 X64OPERAND_CAST( ZMM, 22 )
+#define zmm23 X64OPERAND_CAST( ZMM, 23 )
+#define zmm24 X64OPERAND_CAST( ZMM, 24 )
+#define zmm25 X64OPERAND_CAST( ZMM, 25 )
+#define zmm26 X64OPERAND_CAST( ZMM, 26 )
+#define zmm27 X64OPERAND_CAST( ZMM, 27 )
+#define zmm28 X64OPERAND_CAST( ZMM, 28 )
+#define zmm29 X64OPERAND_CAST( ZMM, 29 )
+#define zmm30 X64OPERAND_CAST( ZMM, 30 )
+#define zmm31 X64OPERAND_CAST( ZMM, 31 )
 
 // mm registers
-#define mm0 (x64Operand) { MM, 0 }
-#define mm1 (x64Operand) { MM, 1 }
-#define mm2 (x64Operand) { MM, 2 }
-#define mm3 (x64Operand) { MM, 3 }
-#define mm4 (x64Operand) { MM, 4 }
-#define mm5 (x64Operand) { MM, 5 }
-#define mm6 (x64Operand) { MM, 6 }
-#define mm7 (x64Operand) { MM, 7 }
+#define mm0 X64OPERAND_CAST( MM, 0 )
+#define mm1 X64OPERAND_CAST( MM, 1 )
+#define mm2 X64OPERAND_CAST( MM, 2 )
+#define mm3 X64OPERAND_CAST( MM, 3 )
+#define mm4 X64OPERAND_CAST( MM, 4 )
+#define mm5 X64OPERAND_CAST( MM, 5 )
+#define mm6 X64OPERAND_CAST( MM, 6 )
+#define mm7 X64OPERAND_CAST( MM, 7 )
 
 // control registers
-#define cr0 (x64Operand) { CR0_7, 0 }
-#define cr1 (x64Operand) { CR0_7, 1 }
-#define cr2 (x64Operand) { CR0_7, 2 }
-#define cr3 (x64Operand) { CR0_7, 3 }
-#define cr4 (x64Operand) { CR0_7, 4 }
-#define cr5 (x64Operand) { CR0_7, 5 }
-#define cr6 (x64Operand) { CR0_7, 6 }
-#define cr7 (x64Operand) { CR0_7, 7 }
-#define cr8 (x64Operand) { CR8, 8 }
+#define cr0 X64OPERAND_CAST( CR0_7, 0 )
+#define cr1 X64OPERAND_CAST( CR0_7, 1 )
+#define cr2 X64OPERAND_CAST( CR0_7, 2 )
+#define cr3 X64OPERAND_CAST( CR0_7, 3 )
+#define cr4 X64OPERAND_CAST( CR0_7, 4 )
+#define cr5 X64OPERAND_CAST( CR0_7, 5 )
+#define cr6 X64OPERAND_CAST( CR0_7, 6 )
+#define cr7 X64OPERAND_CAST( CR0_7, 7 )
+#define cr8 X64OPERAND_CAST( CR8, 8 )
 
 // debug registers
-#define dr0 (x64Operand) { DREG, 0 }
-#define dr1 (x64Operand) { DREG, 1 }
-#define dr2 (x64Operand) { DREG, 2 }
-#define dr3 (x64Operand) { DREG, 3 }
-#define dr4 (x64Operand) { DREG, 4 }
-#define dr5 (x64Operand) { DREG, 5 }
-#define dr6 (x64Operand) { DREG, 6 }
-#define dr7 (x64Operand) { DREG, 7 }
+#define dr0 X64OPERAND_CAST( DREG, 0 )
+#define dr1 X64OPERAND_CAST( DREG, 1 )
+#define dr2 X64OPERAND_CAST( DREG, 2 )
+#define dr3 X64OPERAND_CAST( DREG, 3 )
+#define dr4 X64OPERAND_CAST( DREG, 4 )
+#define dr5 X64OPERAND_CAST( DREG, 5 )
+#define dr6 X64OPERAND_CAST( DREG, 6 )
+#define dr7 X64OPERAND_CAST( DREG, 7 )
 
 // FPU registers
-#define st0 (x64Operand) { ST_0 | ST, 0 }
-#define st1 (x64Operand) { ST, 1 }
-#define st2 (x64Operand) { ST, 2 }
-#define st3 (x64Operand) { ST, 3 }
-#define st4 (x64Operand) { ST, 4 }
-#define st5 (x64Operand) { ST, 5 }
-#define st6 (x64Operand) { ST, 6 }
-#define st7 (x64Operand) { ST, 7 }
+#define st0 X64OPERAND_CAST( ST_0 | ST, 0 )
+#define st1 X64OPERAND_CAST( ST, 1 )
+#define st2 X64OPERAND_CAST( ST, 2 )
+#define st3 X64OPERAND_CAST( ST, 3 )
+#define st4 X64OPERAND_CAST( ST, 4 )
+#define st5 X64OPERAND_CAST( ST, 5 )
+#define st6 X64OPERAND_CAST( ST, 6 )
+#define st7 X64OPERAND_CAST( ST, 7 )
 
 
 // segment registers
-#define es (x64Operand) { SREG, 1 }
-#define cs (x64Operand) { SREG, 2 }
-#define ss (x64Operand) { SREG, 3 }
-#define ds (x64Operand) { SREG, 4 }
-#define fs (x64Operand) { FS | SREG, 5 }
-#define gs (x64Operand) { GS | SREG, 6 }
+#define es X64OPERAND_CAST( SREG, 1 )
+#define cs X64OPERAND_CAST( SREG, 2 )
+#define ss X64OPERAND_CAST( SREG, 3 )
+#define ds X64OPERAND_CAST( SREG, 4 )
+#define fs X64OPERAND_CAST( FS | SREG, 5 )
+#define gs X64OPERAND_CAST( GS | SREG, 6 )
 
-// #define lb(l) (x64Operand) { X64_LABEL_REF | REL32 | REL8, .label_name = l }
+// #define lb(l) X64OPERAND_CAST( X64_LABEL_REF | REL32 | REL8, .label_name = l )
 // #define lb_def(l) (x64Ins) { X64_LABEL_DEF, .label_name = l }
 
-#define rel(insns) (x64Operand) { REL32 | REL8, insns }
+#define rel(insns) X64OPERAND_CAST( REL32 | REL8, insns )
 
 // DISP    : 0x00000000ffffffff bit 0-31
 // BASE    : 0x0000001f00000000 bit 32-36
@@ -340,40 +358,29 @@ enum x64RegisterReference: uint32_t {
 //hi = (disp, base) => (disp & 0xffffffffn | ((base) & 0x30n ? ( (BigInt((base) == 0x20n) && (1n << 61n)) | (BigInt((base) == 0xfff0n) && (0x1n << 36n)) | BigInt((base & 0xfn) << 32n) ) : (0x1n << 60n) | ((base) & 0xfn) << 32n))
 
 
-#define X64MEM_1_ARGS(base)                      (((base) & 0x30 ?\
-																										( ((uint64_t) ((base) == $rip) ? ((uint64_t) 0x1 << 61) : 0) | ((uint64_t) ((base) == $riprel) ? ((uint64_t) 0x3 << 61) : 0) | ((uint64_t) ((base) == $none) ? ((uint64_t) 0x1 << 36) : 0) | ((uint64_t) ((base) & 0xf) << 32) ) :\
-																										((uint64_t) 0x1 << 60) | (uint64_t) ((base) & 0xf) << 32) |\
-																									(uint64_t) 0x10 << 40)
+#define X64MEM_1_ARGS(base)                      (((base) & 0x30 ?																										( ((uint64_t) ((base) == $rip) ? ((uint64_t) 0x1 << 61) : 0) | ((uint64_t) ((base) == $riprel) ? ((uint64_t) 0x3 << 61) : 0) | ((uint64_t) ((base) == $none) ? ((uint64_t) 0x1 << 36) : 0) | ((uint64_t) ((base) & 0xf) << 32) ) :																										((uint64_t) 0x1 << 60) | (uint64_t) ((base) & 0xf) << 32) |																									(uint64_t) 0x10 << 40)
 #define X64MEM_2_ARGS(base, disp)               (disp & 0xffffffff | X64MEM_1_ARGS(base))
-#define X64MEM_3_ARGS(base, disp, index)        (disp & 0xffffffff | ((base) & 0x30 ?\
-																										( ((uint64_t) ((base) == $rip) ? ((uint64_t) 0x1 << 61) : 0) | ((uint64_t) ((base) == $riprel) ? ((uint64_t) 0x3 << 61) : 0) | ((uint64_t) ((base) == $none) ? ((uint64_t) 0x1 << 36) : 0) | ((uint64_t) ((base) & 0xf) << 32) ) :\
-																										((uint64_t) 0x1 << 60) | (uint64_t) ((base) & 0xf) << 32) |\
-																									(uint64_t) ((index) == $none ? 0x10 : (index) & 0x80000F) << 40)
+#define X64MEM_3_ARGS(base, disp, index)        (disp & 0xffffffff | ((base) & 0x30 ?																										( ((uint64_t) ((base) == $rip) ? ((uint64_t) 0x1 << 61) : 0) | ((uint64_t) ((base) == $riprel) ? ((uint64_t) 0x3 << 61) : 0) | ((uint64_t) ((base) == $none) ? ((uint64_t) 0x1 << 36) : 0) | ((uint64_t) ((base) & 0xf) << 32) ) :																										((uint64_t) 0x1 << 60) | (uint64_t) ((base) & 0xf) << 32) |																									(uint64_t) ((index) == $none ? 0x10 : (index) & 0x80000F) << 40)
 #define X64MEM_4_ARGS(base, disp, index, scale) (X64MEM_3_ARGS(base, disp, index) | (uint64_t) ((scale) <= 1 ? 0b00 : (scale) == 2 ? 0b01 : (scale) == 4 ? 0b10 : 0b11) << 48)
-#define X64MEM_5_ARGS(base, disp, index, scale, segment) (disp & 0xffffffff\
-	| ((base) & 0x30 ? /*If the operand is more than 32 bits wide or is equal to the RIP register, set mode to wide addressing and set base register, or RIP addressing*/\
-			( ((uint64_t) ((base) == $rip) ? ((uint64_t) 0x1 << 61) : 0) | ((uint64_t) ((base) == $riprel) ? ((uint64_t) 0x3 << 61) : 0) | ((uint64_t) ((base) == $none) ? ((uint64_t) 0x1 << 36) : 0) | ((uint64_t) ((base) & 0xf) << 32) ) :\
-			((uint64_t) 0x1 << 60) | (uint64_t) ((base) & 0xf) << 32)\
-	| (uint64_t) ((index) == $none ? 0x10 : (index) & 0x80000F) << 40\
-	| (uint64_t) ((scale) <= 1 ? 0b00 : (scale) == 2 ? 0b01 : (scale) == 4 ? 0b10 : 0b11) << 48\
-	| (uint64_t) (((segment) - $rip) & (uint64_t) 0x7) << 56) /* minusing from $rip, because segment registers are 1 + their value for simplification. */
+#define X64MEM_5_ARGS(base, disp, index, scale, segment) (disp & 0xffffffff	| ((base) & 0x30 ? /*If the operand is more than 32 bits wide or is equal to the RIP register, set mode to wide addressing and set base register, or RIP addressing*/			( ((uint64_t) ((base) == $rip) ? ((uint64_t) 0x1 << 61) : 0) | ((uint64_t) ((base) == $riprel) ? ((uint64_t) 0x3 << 61) : 0) | ((uint64_t) ((base) == $none) ? ((uint64_t) 0x1 << 36) : 0) | ((uint64_t) ((base) & 0xf) << 32) ) :			((uint64_t) 0x1 << 60) | (uint64_t) ((base) & 0xf) << 32)	| (uint64_t) ((index) == $none ? 0x10 : (index) & 0x80000F) << 40	| (uint64_t) ((scale) <= 1 ? 0b00 : (scale) == 2 ? 0b01 : (scale) == 4 ? 0b10 : 0b11) << 48	| (uint64_t) (((segment) - $rip) & (uint64_t) 0x7) << 56) /* minusing from $rip, because segment registers are 1 + their value for simplification. */
 
 #define GET_4TH_ARG(arg1, arg2, arg3, arg4, arg5, arg6, ...) arg6
-#define X64MEM_MACRO_CHOOSER(...) \
-    GET_4TH_ARG(__VA_ARGS__, X64MEM_5_ARGS, X64MEM_4_ARGS, X64MEM_3_ARGS, \
-                X64MEM_2_ARGS, X64MEM_1_ARGS, )
+#define X64MEM_MACRO_CHOOSER(...)     GET_4TH_ARG(__VA_ARGS__, X64MEM_5_ARGS, X64MEM_4_ARGS, X64MEM_3_ARGS,                 X64MEM_2_ARGS, X64MEM_1_ARGS, )
 
 #define x64mem(...) X64MEM_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
 
-#define m8(...) (x64Operand) { M8, x64mem(__VA_ARGS__) }
-#define m16(...) (x64Operand) { M16, x64mem(__VA_ARGS__) }
-#define m32(...) (x64Operand) { M32, x64mem(__VA_ARGS__) }
-#define m64(...) (x64Operand) { M64, x64mem(__VA_ARGS__) }
-#define m128(...) (x64Operand) { M128, x64mem(__VA_ARGS__) }
-#define m256(...) (x64Operand) { M256, x64mem(__VA_ARGS__) }
-#define m512(...) (x64Operand) { M512, x64mem(__VA_ARGS__) }
-#define mem(...) (x64Operand) { M8 | M16 | M32 | M64 | M128 | M256 | M512, x64mem(__VA_ARGS__) }
+#define m8(...) X64OPERAND_CAST( M8, x64mem(__VA_ARGS__) )
+#define m16(...) X64OPERAND_CAST( M16, x64mem(__VA_ARGS__) )
+#define m32(...) X64OPERAND_CAST( M32, x64mem(__VA_ARGS__) )
+#define m64(...) X64OPERAND_CAST( M64, x64mem(__VA_ARGS__) )
+#define m128(...) X64OPERAND_CAST( M128, x64mem(__VA_ARGS__) )
+#define m256(...) X64OPERAND_CAST( M256, x64mem(__VA_ARGS__) )
+#define m512(...) X64OPERAND_CAST( M512, x64mem(__VA_ARGS__) )
+#define mem(...) X64OPERAND_CAST( M8 | M16 | M32 | M64 | M128 | M256 | M512, x64mem(__VA_ARGS__) )
 
+#ifdef __cplusplus 
+extern "C" {
+#endif
 
 // Emits code and links rip relatives, labels, and jumps after.
 uint8_t* x64as(const x64 p, uint32_t num, uint32_t* len);
@@ -390,3 +397,7 @@ void x64exec_free(void* buf, uint32_t size);
 
 // Gets last emitted error code and string.
 char* x64error(int* errcode);
+
+#ifdef __cplusplus 
+}
+#endif
