@@ -176,13 +176,11 @@ for(size_t i = 0; i < sizeof(code) / sizeof(code[0]); i++) {
 Limitations
 -----------
 
-Currently does not support protected mode instructions (32 bit instructions) and ARM instructions at all. I do plan to eventually add support for them in the future as soon as I can find a good table of all available instructions.
+Currently does not support legacy instructions (32 bit protected mode instructions) because I didn't deem it necessary to support for hobbyists in the modern era. It's easily possible though, with some slight modifications to the encoding methods! If there are enough people that want it, I will work on adding it as a separate file.
 
-**I currently do not support AVX-512!!**
+I currently do not support AVX-512!! This will change eventually, as there are some plans to add support for it, with all of its' weird syntax. I have been thinking of something like `ymm(10, k1, z)` for example.
 
-This is because AVX-512 has a lot of limitations ([SIMD instructions lowering CPU frequency](https://stackoverflow.com/questions/56852812/simd-instructions-lowering-cpu-frequency)) and little performance benefits outside of very niche use cases. Even big compilers like GCC and Clang refuse to emit AVX-512 unless forced to do so.
-
-AVX-512 addition is definitely a possibility though and I do have some ideas of how the syntax would work. `ymm(10, k1, z)` for example.
+Support for other instruction sets will come when I get to them, and I when get some good tables that give me the exact information I need! I currently use a modified table from [StanfordPL/x64asm](https://github.com/StanfordPL/x64asm).
 
 License
 -------
@@ -203,7 +201,10 @@ FAQ
 > - [bitdefender/bddisasm](https://github.com/bitdefender/bddisasm) - Fast, easy to use Disassembler library.
 > - [garc0/CTAsm](https://github.com/garc0/CTAsm) - Compile time assembler for C++ using only templates.
 
-Thanks to
----------
+### Where did you get the idea to make something like this?
 
-Very grateful to https://github.com/StanfordPL/x64asm for giving me the idea and inspiration to create this! I couldn't use their library from Windows or through C, so I took inspiration from what they did and wrote my library in C. I use their table to generate some of the code in [`asm_x64.c`](asm_x64.c) and while I didn't take any code from them, I did take inspiration for how to do operands.
+> The first time I saw a library like this was when I found https://github.com/StanfordPL/x64asm. I loved the idea, but I couldn't use their library from C or Windows, so I took the liberty to redesign some of their library. I use their table to generate my own table in [`asm_x64.c`](asm_x64.c) and while I haven't used any of their code, I did take inspiration from how they did instruction operands.
+
+### Where is the full source for all scripts and tests shown?
+
+> All source is in [aqilc/rustscript](https://github.com/aqilc/rustscript/tree/main/lib/asm). Tests testing all the features and operands are [here](https://github.com/aqilc/rustscript/blob/main/tests/asm.c).
