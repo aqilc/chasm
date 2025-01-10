@@ -96,12 +96,13 @@ Other valid `mem()` syntax examples are: `mem($rax)`, `mem($none, 0, $rdx, 8)` a
 
 ```c
 x64 code = {
-  { LEA, rcx, mem($riprel, 3) }, // ━┓
-  { PUSH, rcx                 }, //  ┃ Pushes this address on the stack.
-  { XOR, rcx, rcx             }, //  ┃
-  { DEC, rax                  }, // ◄┛
-  { JZ, rel(2)                }, // Jumps out of the loop.
-  { RET                       } // Pops the previously pushed pointer off and goes to it, basically JMP, rel(-2)
+  { MOV,  rax,   imm(1)          }, // 1 Iteration
+  { LEA,  rcx,   mem($riprel, 3) }, // ━┓
+  { PUSH, rcx                    }, //  ┃ Pushes this address on the stack.
+  { XOR,  rcx,   rcx             }, //  ┃
+  { DEC,  rax                    }, // ◄┛
+  { JZ,   rel(2)                 }, // Jumps out of the loop.
+  { RET                          }, // Pops the previously pushed pointer off and goes to it, basically JMP, rel(-2)
 };
 ```
 
@@ -187,6 +188,20 @@ License
 -------
 
 Chasm is dual licensed under the MIT Licence and Public Domain. You can choose the licence that suits your project the best. The MIT Licence is a permissive licence that is short and to the point. The Public Domain licence is a licence that makes the software available to the public for free and with no copyright.
+
+FAQ
+---
+
+### Why the name **chasm**?
+
+> A chasm is a deep ravine or hole formed through millenia of erosion and natural processes. This name struck a chord in my heart, as I have been working on this library for over a year, and it's the best way I know of getting low and deep into the heart of computing. I also loved that it had "asm" and "c" in it, which are big parts of what this library is about.
+
+### This library doesn't fit me. What are some others?
+
+> - [asmjit/asmjit](https://github.com/asmjit/asmjit) - A popular choice for C++ developers and many times more complex and feature rich than chasm.
+> - [aengelke/fadec](https://github.com/aengelke/fadec) - Similar library to chasm but a completely different API that might be more flexible but harder for some.
+> - [bitdefender/bddisasm](https://github.com/bitdefender/bddisasm) - Fast, easy to use Disassembler library.
+> - [garc0/CTAsm](https://github.com/garc0/CTAsm) - Compile time assembler for C++ using only templates.
 
 Thanks to
 ---------
