@@ -5,7 +5,7 @@
 
 ```c
 #include <stdio.h>
-#include "lib/asm/asm_x64.h"
+#include "asm_x64.h"
 
 int main() {
 	char* str = "Hello World!";
@@ -23,7 +23,6 @@ int main() {
 	return 0;
 }
 ```
-#### Usage
 
 > Download [`asm_x64.c`](asm_x64.c) and [`asm_x64.h`](asm_x64.h) into your project and just include [`asm_x64.h`](asm_x64.h) to start assembling!
 
@@ -48,6 +47,8 @@ This library is useful for any code generated dynamically from user input. This 
 - Testing / benchmarking software
 - Writing your own assemblers!
 
+I would highly recommend using something like [`examples/vec.h`](examples/vec.h) to dynamically push code onto a single array throughout your application with very low latency. I show this off in [`examples/bf_compiler.c`](examples/bf_compiler.c)!
+
 Performance
 -----------
 
@@ -56,10 +57,8 @@ Performance
 Assembler is built in an optimized fashion where anything that can be precomputed, is precomputed.
 In the above screenshot, it's shown that an optimized build can assemble most instructions in about 15 nanoseconds, which goes down to 30 for unoptimized builds.
 
-API
----
-
-### Code
+API: Code
+---------
 
 `x64` is an array of `x64Ins` structs. The first member of the struct is `op`, or the operation, an enum defined by the **[`asm_x64.h`](asm_x64.h)** header. The other 4 members are `x64Operand` structs, which are just a combination of the type of operand with the value.
 
@@ -76,51 +75,55 @@ Notice the use of `rax` and `imm(0)`. All x86 registers like `rax` (including `m
 - `rel()` for relative offsets referencing other instructions. The use of this macro requires soft linking if used that way.
   - **Note:** `rel(0)` references the current instruction, so `JMP, rel(0)` jumps back to itself infinitely! Pass in 1 to jump to the next instruction.
 
-#### `mem()` and `m<size>()` syntax.
+### `mem()` and `m<size>()` syntax.
 
-> `m8()`, `m16()`, `m32()`, `m64()`, `m128()`, `m256()` and `m512()` are more specific versions of the `mem()` macro, which references any and every size of memory for ease of use. Generally, if you know the size of memory accessed, use the size specific version of the macro that matches with the bit width of the other operands. All of these macros have the same syntax.
 
-Let's start off with an example:
+Let's start off with an example of `lea rax, ds:[rax + 0xffe + rdx * 2]` in chasm:
 
 ```c
 x64 code = { LEA, rax, mem($rax, 0x0ffe, $rdx, 2, $ds) };
 ```
 
-This is a **variable** length macro, with each argument being optional. Each of the **register** arguments of the `mem()` macro have to be preceeded with a `$` prefix. Any 32 bit signed integer can be passed for the offset parameter, and only 1, 2, 4 and 8 are allowed in the 4th parameter, also called the "scale" parameter (**ANY OTHER VALUE WILL GO TO 1**, x86 limitation). The last parameter is a segment register, also preceeded with a `$`. **Make sure to pass in $none for register parameters you are not using, as it will assume eax otherwise**
+This is a **variable** length macro, with each argument being optional. Each of the **register** arguments of the `mem()` macro have to be preceeded with a `$` prefix. Any 32 bit signed integer can be passed for the offset parameter, and only 1, 2, 4 and 8 are allowed in the 4th parameter, also called the "scale" parameter (**ANY OTHER VALUE WILL GO TO 1**, x86 limitation). The last parameter is a segment register, also preceeded with a `$`.
 
-Other valid `mem()` syntax examples are: `mem($rax)`, `mem($none, 0, $rdx, 8)` and with VSIB `mem($rdx, 0, $ymm2, 4)`.
+Other valid `mem()` syntax examples are: `mem($rax)`, `mem($none, 0, $rdx, 8)`, `mem($none, 0x60, $none, 1, $gs)` and with VSIB `mem($rdx, 0, $ymm2, 4)`.
 
-#### `mem($riprel)`
+`m8()`, `m16()`, `m32()`, `m64()`, `m128()`, `m256()` and `m512()` are specific versions of the `mem()` macro, referencing the exact size of data accessed with the exact same syntax. Use `mem()` with FPU, otherwise use the specific version of the macro if data size is known. The most efficient/common size is selected with `mem()`, but can cause bugs when it's smaller than you intend.
+
+> [!important]
+> **Make sure to pass in $none for register parameters you are not using, as it will assume eax if you pass in 0!** If you omit arguments though, `$none` is assumed :)
+
+### `mem($riprel)`
 
 `$rip` is a valid register to use with `mem()`, but it's not very useful when you might not know the byte-length of the instructions in between the ones you're trying to reference. This is where `$riprel` can be used as the base register for `mem()` allowing you to reference other instructions without knowing the byte-length in between! In `$riprel`, just like `rel()`, 0 means the current instruction. This is the answer to `lea rax, [$+1]` syntax provided by many assemblers. Here's an example:
 
 ```c
 x64 code = {
   { MOV,  rax,   imm(1)          }, // 1 Iteration
-  { LEA,  rcx,   mem($riprel, 3) }, // ━┓
-  { PUSH, rcx                    }, //  ┃ Pushes this address on the stack.
-  { XOR,  rcx,   rcx             }, //  ┃
+  { LEA,  rcx,   mem($riprel, 2) }, // ━┓
+  { PUSH, rcx                    }, //  ┃ Pushes this address on the stack. Equivalent to "call $+2"
   { DEC,  rax                    }, // ◄┛
   { JZ,   rel(2)                 }, // Jumps out of the loop.
-  { RET                          }, // Pops the previously pushed pointer off and goes to it, basically JMP, rel(-2)
+  { RET                          }, // Pops the pushed pointer off and jumps, basically "jmp $-2"
 };
 ```
 
-There's also an example in [`examples/bf_compiler.c`](examples/bf_compiler.c).
+This is an example of some complicated control flow you can achieve with chasm! There's also an example in [`examples/bf_compiler.c`](examples/bf_compiler.c).
 
 > [!Important]
 > To get actual results with this syntax, you need to link your code with `x64as()`! Index and scale also do not work with `$rip` or `$riprel` as base registers.
 
-### Functions
+API: Functions
+--------------
 
-#### <pre lang="c">uint8_t* x64as(x64 code, size_t len, uint32_t* outlen);</pre>
+### <pre lang="c">uint8_t* x64as(x64 code, size_t len, uint32_t* outlen);</pre>
 
 #### Assembles and soft links code, dealing with `$riprel` and `rel()` syntax and returning the assembled code.
 
 - Returns NULL if an error occured, and sets the error code to the `x64error` variable.
 - The length of the assembled code is stored in `outlen`.
 
-#### <pre lang="c">uint32_t x64emit(const x64Ins* ins, uint8_t* opcode_dest);</pre>
+### <pre lang="c">uint32_t x64emit(const x64Ins* ins, uint8_t* opcode_dest);</pre>
 
 #### Assembles a single instruction and stores it in `opcode_dest`.
 
@@ -145,27 +148,27 @@ for(size_t i = 0; i < sizeof(code) / sizeof(code[0]); i++) {
 }
 ```
 
-#### <pre lang="c">void (*x64exec(void* mem, uint32_t size))();</pre>
+### <pre lang="c">void (*x64exec(void* mem, uint32_t size))();</pre>
 
 #### Uses a Syscall to allocate memory with the EXecute bit set, so you can execute your code.
 
 - Returns a function pointer to the code, which you can call to run your code.
   - Free this memory with `x64exec_free()`.
 
-#### <pre lang="c">void x64exec_free(void* mem, uint32_t size);</pre>
+### <pre lang="c">void x64exec_free(void* mem, uint32_t size);</pre>
 
 #### Frees memory allocated by `x64exec()`.
 
 > [!note]
 > Store the size of the memory you requested with `x64exec()` as you will need to pass it in here, at least for Unix.
 
-#### <pre lang="c">char* x64stringify(const x64 p, uint32_t num);</pre>
+### <pre lang="c">char* x64stringify(const x64 p, uint32_t num);</pre>
 
 #### Stringifies the IR. Useful for debugging and inspecting it.
 
 - Returns a string, NULL if an error occurred which will be accessible with `x64error()`.
 
-#### <pre lang="c">char* x64error(int* errcode);</pre>
+### <pre lang="c">char* x64error(int* errcode);</pre>
 
 #### Gets the error message of the last error that occured.
 
