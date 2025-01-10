@@ -9231,18 +9231,10 @@ static u32 encode(const x64Ins* ins, x64LookupActualIns* res, u8* opcode_dest);
 _Thread_local struct AssemblyError {
   bool error;
   char buf[100];
-  enum AssemblyErrorType {
-    ASMERR_INVALID_INS,
-    ASMERR_INVALID_REG_TYPE,
-    ASMERR_INS_ARGUMENT_MISMATCH,
-    ASMERR_ESPRSP_USED_AS_INDEX,
-    ASMERR_REL_OUT_OF_RANGE,
-    ASMERR_LABEL_NOT_FOUND
-    // More to come
-  } error_type;
+  x64ErrorType error_type;
 } cur_error;
 
-static inline u32 error(enum AssemblyErrorType type, char* fmt, ...) {
+static inline u32 error(x64ErrorType type, char* fmt, ...) {
   cur_error.error = true;
   cur_error.error_type = type;
   va_list args;
@@ -9252,7 +9244,7 @@ static inline u32 error(enum AssemblyErrorType type, char* fmt, ...) {
   return 0;
 }
 
-char* x64error(int* errcode) {
+char* x64error(x64ErrorType* errcode) {
   if(cur_error.error) {
     cur_error.error = false;
     if(errcode) *errcode = cur_error.error_type;

@@ -88,6 +88,15 @@ struct x64Ins {
 typedef struct x64Ins x64Ins;
 typedef x64Ins x64[];
 
+enum x64ErrorType {
+	ASMERR_INVALID_INS,
+	ASMERR_INVALID_REG_TYPE,
+	ASMERR_INS_ARGUMENT_MISMATCH,
+	ASMERR_ESPRSP_USED_AS_INDEX,
+	ASMERR_REL_OUT_OF_RANGE,
+};
+typedef enum x64ErrorType x64ErrorType;
+
 #ifdef __cplusplus
 #define X64OPERAND_CAST(...) x64Operand(__VA_ARGS__)
 #else
@@ -396,7 +405,7 @@ void (*x64exec(void* mem, uint32_t size))();
 void x64exec_free(void* buf, uint32_t size);
 
 // Gets last emitted error code and string.
-char* x64error(int* errcode);
+char* x64error(x64ErrorType* errcode);
 
 #ifdef __cplusplus 
 }
