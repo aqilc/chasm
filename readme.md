@@ -17,7 +17,7 @@ int main() {
 	
 	uint32_t len = 0;
 	uint8_t* assembled = x64as(code, sizeof(code) / sizeof(code[0]), &len);
-	if(!assembled) return 1;
+	if(!assembled) return fprintf(stderr, "%s", x64error(NULL)), 1;
 	
 	x64exec(assembled, len)(); // Prints "Hello World!"
 	return 0;
@@ -33,7 +33,7 @@ Features
 - Supports AVX-256 and many other x86 extensions.
 - Fast, assembling up to 100 million instructions per second.
 - Easy and flexible syntax, allowing you as much freedom as possible with coding practices.
-- Simple error handling system, returning 0 from a function if it failed and fast error retrieval with `x64error(NULL)`.
+- Simple and consistent error handling system, returning 0 on failure and fast error retrieval with `x64error(NULL)`.
 - Stringification of the IR for easy debugging with `x64stringify(code, len)`.
 
 Use Cases
@@ -47,7 +47,7 @@ This library is useful for any code generated dynamically from user input. This 
 - Testing / benchmarking software
 - Writing your own assemblers!
 
-I would highly recommend using something like [`examples/vec.h`](examples/vec.h) to dynamically push code onto a single array throughout your application with very low latency. I show this off in [`examples/bf_compiler.c`](examples/bf_compiler.c)!
+I would highly recommend using something like [`example/vec.h`](example/vec.h) (Arena library) to dynamically push code onto a single array throughout your application with very low latency. I show this off in [`example/bf_compiler.c`](example/bf_compiler.c)!
 
 Performance
 -----------
@@ -55,7 +55,10 @@ Performance
 ![Screenshot 2024-12-30 192539](https://github.com/user-attachments/assets/c28d8cc3-582c-4704-ad9e-816ece2f52e0)
 
 Assembler is built in an optimized fashion where anything that can be precomputed, is precomputed.
+
 In the above screenshot, it's shown that an optimized build can assemble most instructions in about 15 nanoseconds, which goes down to 30 for unoptimized builds.
+
+Considering an average of 9 nanoseconds per function call, most of that 15 ns is actually wasted on function call overhead!
 
 API: Code
 ---------
@@ -70,48 +73,62 @@ x64 code = { MOV, rax, imm(0) };
 
 Notice the use of `rax` and `imm(0)`. All x86 registers like `rax` (including `mm`s, `ymm`s etc) are defined as macros with the type `x64Operand`. Other types of macros:
 
-- `imm()`, `im8()`, `im16`, `im32()`, `im64()` and `imptr()` for immediate values.
+- `imm()`, `im8()`, `im16`, `im32()`, `im64()` and `imptr()` for immediate values, another name for numbers embedded in the instruction encoding.
 - `mem()`, `m8()`, `m16()`, `m32()`, `m64()`, `m128()`, `m256()` and `m512()` for memory addresses.
-- `rel()` for relative offsets referencing other instructions. The use of this macro requires soft linking if used that way.
-  - **Note:** `rel(0)` references the current instruction, so `JMP, rel(0)` jumps back to itself infinitely! Pass in 1 to jump to the next instruction.
+- `rel()` for control flow. Please read ***Relative Instruction References*** for more information.
+  - **Note:** `rel(0)` references the current instruction, so `JMP, rel(0)` jumps back to itself infinitely! 1 jumps to the next instruction and so on.
+- If an instruction supports forcing a prefix, `{PREF66}` and `{PREFREX_W}` are available.
 
-### `mem()` and `m<size>()` syntax.
+### Memory References.
 
-
-Let's start off with an example of `lea rax, ds:[rax + 0xffe + rdx * 2]` in chasm:
+Let's start off with an example of `lea rax, ds:[rax + 100 + rdx * 2]` in chasm:
 
 ```c
-x64 code = { LEA, rax, mem($rax, 0x0ffe, $rdx, 2, $ds) };
+x64 code = { LEA, rax, mem($rax, 100, $rdx, 2, $ds) };
 ```
 
 This is a **variable** length macro, with each argument being optional. Each of the **register** arguments of the `mem()` macro have to be preceeded with a `$` prefix. Any 32 bit signed integer can be passed for the offset parameter, and only 1, 2, 4 and 8 are allowed in the 4th parameter, also called the "scale" parameter (**ANY OTHER VALUE WILL GO TO 1**, x86 limitation). The last parameter is a segment register, also preceeded with a `$`.
 
-Other valid `mem()` syntax examples are: `mem($rax)`, `mem($none, 0, $rdx, 8)`, `mem($none, 0x60, $none, 1, $gs)` and with VSIB `mem($rdx, 0, $ymm2, 4)`.
+Other valid `mem()` syntax examples are:
+* `mem($rax)`,
+* `mem($none, 0, $rdx, 8)`,
+* `mem($none, 0x60, $none, 1, $gs)`,
+* `mem($rip, 2)` (RIP memory references only use the offset, index and scale do not work),
+* `mem($riprel, 2)` (read more in ***Relative Instruction References***),
+* `mem($rdx, 0, $ymm2, 4)` (VSIB).
 
-`m8()`, `m16()`, `m32()`, `m64()`, `m128()`, `m256()` and `m512()` are specific versions of the `mem()` macro, referencing the exact size of data accessed with the exact same syntax. Use `mem()` with FPU, otherwise use the specific version of the macro if data size is known. The most efficient/common size is selected with `mem()`, but can cause bugs when it's smaller than you intend.
+#### Be careful when using `mem()`:
+- Just like in regular assemblers, not specifying a specific size can be problematic when there's multiple possible ones.
+- `m8()`, `m16()`, `m32()`, `m64()`, `m128()`, `m256()` and `m512()` specify the exact size of data referenced, erroring when that size isn't available with that instruction.
+- `mem()` will not error when there's multiple sizes, instead using the smallest one available, but can cause bugs when it's not the size you intend.
+- You can use `x64mem` for more flexibility in size, like `{ a > b ? M8 : M16, x64mem(<normal mem() arguments>) }`. Uppercase `M<size>` are enums for the size.
+- Exception: Use `mem()` with FPU, as specifying the size doesn't mean much in the encoding.
 
 > [!important]
 > **Make sure to pass in $none for register parameters you are not using, as it will assume eax if you pass in 0!** If you omit arguments though, `$none` is assumed :)
 
-### `mem($riprel)`
+### Relative Instruction References.
 
-`$rip` is a valid register to use with `mem()`, but it's not very useful when you might not know the byte-length of the instructions in between the ones you're trying to reference. This is where `$riprel` can be used as the base register for `mem()` allowing you to reference other instructions without knowing the byte-length in between! In `$riprel`, just like `rel()`, 0 means the current instruction. This is the answer to `lea rax, [$+1]` syntax provided by many assemblers. Here's an example:
+In assemblers, when you see `$+n` (`. + n` in GAS), it's a special syntax that lets you have a relative instruction based offset, as calculating the actual offset is impossible with a variable length encoding. Chasm also has an answer to this with `rel()` and `mem($riprel)`. Here's an example of both:
 
 ```c
 x64 code = {
   { MOV,  rax,   imm(1)          }, // 1 Iteration
-  { LEA,  rcx,   mem($riprel, 2) }, // ━┓
+  { LEA,  rcx,   mem($riprel, 2) }, // ━┓ "lea rcx, [$+2]"
   { PUSH, rcx                    }, //  ┃ Pushes this address on the stack. Equivalent to "call $+2"
   { DEC,  rax                    }, // ◄┛
-  { JZ,   rel(2)                 }, // Jumps out of the loop.
-  { RET                          }, // Pops the pushed pointer off and jumps, basically "jmp $-2"
+  { JZ,   rel(2)                 }, // ━┓ "jz $+2" (jumps out of the loop).
+  { RET                          }, //  ┃ Pops the pushed pointer off and jumps, basically "jmp $-2"
 };
 ```
 
-This is an example of some complicated control flow you can achieve with chasm! There's also an example in [`examples/bf_compiler.c`](examples/bf_compiler.c).
+Simply, the number supplied is used to reference that many instructions ahead of the current instruction. `0` means the current instruction. `{ JMP, rel(0) }` would halt the processor, so be careful.
+
+More examples in [`example/bf_compiler.c`](example/bf_compiler.c).
 
 > [!Important]
-> To get actual results with this syntax, you need to link your code with `x64as()`! Index and scale also do not work with `$rip` or `$riprel` as base registers.
+> To get actual results with this syntax, you need to link your code with `x64as()`!
+
 
 API: Functions
 --------------
@@ -120,15 +137,17 @@ API: Functions
 
 #### Assembles and soft links code, dealing with `$riprel` and `rel()` syntax and returning the assembled code.
 
-- Returns NULL if an error occured, and sets the error code to the `x64error` variable.
+- Returns NULL if an error occured, retrieved with `x64error()`.
 - The length of the assembled code is stored in `outlen`.
+- Internally allocates returned code, freed with `free()`.
 
 ### <pre lang="c">uint32_t x64emit(const x64Ins* ins, uint8_t* opcode_dest);</pre>
 
 #### Assembles a single instruction and stores it in `opcode_dest`.
 
 - Returns the length of the instruction in bytes. If it returns 0, an error has occurred.
-- This function does not perform any linking, so it's likely much faster to loop with this function than to use x64as() if you do not have any `rel()` or `mem($riprel)`s in your code.
+- `opcode_dest` needs to be a buffer of at least 15 bytes to accomodate any/all x86 instructions.
+- This function does not perform any linking, so in the case of there being no relative references in your code, it's likely much faster to loop with this function than to use `x64as()`.
 
 Example of such loop:
 
@@ -139,7 +158,7 @@ uint32_t buf_len = 0;
 for(size_t i = 0; i < sizeof(code) / sizeof(code[0]); i++) {
   const uint32_t len = x64emit(&code[i], buf + buf_len);
   
-  if(!len) { // Or any other kind of error handling code. This is what x64as() does internally.
+  if(!len) {
     fprintf(stderr, "%s", x64error(NULL));
     return 1;
   }
@@ -147,6 +166,8 @@ for(size_t i = 0; i < sizeof(code) / sizeof(code[0]); i++) {
   buf_len += len;
 }
 ```
+
+A loop similar to this is used internally in `x64as()`!
 
 ### <pre lang="c">void (*x64exec(void* mem, uint32_t size))();</pre>
 
@@ -167,6 +188,7 @@ for(size_t i = 0; i < sizeof(code) / sizeof(code[0]); i++) {
 #### Stringifies the IR. Useful for debugging and inspecting it.
 
 - Returns a string, NULL if an error occurred which will be accessible with `x64error()`.
+- Returned string uses Intel ASM Syntax, like `mov [rax + rdx * 2], 20`. Multiple instructions are preceeded with a tab.
 
 ### <pre lang="c">char* x64error(int* errcode);</pre>
 
@@ -179,11 +201,17 @@ for(size_t i = 0; i < sizeof(code) / sizeof(code[0]); i++) {
 Limitations
 -----------
 
-Currently does not support legacy instructions (32 bit protected mode instructions) because I didn't deem it necessary to support for hobbyists in the modern era. It's easily possible though, with some slight modifications to the encoding methods! If there are enough people that want it, I will work on adding it as a separate file.
+- No support for 32 bit legacy / protected mode instructions.
+- No support for AVX-512.
+  - Trying to change this, maybe with syntax like `ymm(10, k1, z)`.
+- No support for architectures other than x86-64 (like ARM).
+- Labels, as they are extremely difficult to implement in a sane manner and take up too much memory.
 
-I currently do not support AVX-512!! This will change eventually, as there are some plans to add support for it, with all of its' weird syntax. I have been thinking of something like `ymm(10, k1, z)` for example.
+If people seem to need support for any of these limitations, I will try my best to add them! In my personal use, I haven't needed them so I haven't gone through the effort.
 
-Support for other instruction sets will come when I get to them, and I when get some good tables that give me the exact information I need! I currently use a modified table from [StanfordPL/x64asm](https://github.com/StanfordPL/x64asm).
+I have tried very hard to add labels, and nothing seems to be elegant. I'm open to it if someone can draft a good plan for it! My goal is to support it fully without limiting strings to string literals only, if I were to support it at all. You can still see remnants of previous attempts in [`asm_x64.c`](asm_x64.c).
+
+Also, support for other instruction sets will come when I get to them, and I when get some good tables that give me the exact information I need! I currently use a modified table from [StanfordPL/x64asm](https://github.com/StanfordPL/x64asm). Their table has some incorrect instructions, so I wouldn't suggest using that one for your own projects.
 
 License
 -------
