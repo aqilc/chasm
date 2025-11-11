@@ -88,8 +88,8 @@ x64Ins* bf_compile(char* in) {
 			vpusharr(ret, {
 				{ MOV, rax, mem($rbp, -8) },
 				{ CMP, m8($rax), imm(0) },
-				{ JZ, rel(3) },
 				{ POP, rax },
+				{ JZ, rel(2) },
 				{ JMP, rax },
 			});
 		default: break;
