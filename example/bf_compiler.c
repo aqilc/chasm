@@ -32,6 +32,10 @@ char* prog1 = PROG(
 
 x64Ins* bf_compile(char* in) {
 	x64Ins* ret = vnew();
+
+	// Keeps track of loops in a tree structure where we can rewind and pop to the parent node when needed.
+	struct { int start, end, parent_idx; }* loops = vnew();
+	int parentloop = -1;
 	
 #ifdef _WIN32
 	x64Operand arg1 = rcx, arg2 = rdx;
@@ -66,7 +70,13 @@ x64Ins* bf_compile(char* in) {
 			break;
 		}
 		case '[':
+			vpush(loops, { vlen(ret) + 2 /* 3 instructions down is JZ */, -1, parentloop });
+			parentloop = vlen(loops) - 1; // Tree of loops, as each loop instruction length needs to be resolved to be able to be skipped.
+			
 			vpusharr(ret, {
+				{ MOVZX, eax, m8($rax) },
+				{ TEST, al, al },
+				{ JZ }, // First argument (where to jump) to be filled in later!
 				{ LEA, rsi, m64($riprel, 0) }, // 0 here means $+0 or the current instruction
 				{ PUSH, rsi }
 			});
@@ -84,6 +94,9 @@ x64Ins* bf_compile(char* in) {
 			});
 			break;
 		case ']':
+			loops[parentloop].end = vlen(ret) + 5;
+			if((parentloop = loops[parentloop].parent_idx) == -1) parentloop = 0;
+
 			rax_garbled = true;
 			vpusharr(ret, {
 				{ MOV, rax, mem($rbp, -8) },
@@ -102,6 +115,13 @@ x64Ins* bf_compile(char* in) {
 		{ POP, rbp },
 		{ RET },
 	});
+
+	for(int i = 0; i < vlen(loops); i ++) {
+		int end = loops[i].end, start = loops[i].start;
+		if (end == -1) end = vlen(ret) - 4; // compensating for the last 3 instructions.
+
+		ret[start].params[0] = rel(end - start);
+	}
 	return ret;
 }
 
