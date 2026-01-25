@@ -134,5 +134,8 @@ int main() {
 	void* compiled = x64as(ins, vlen(ins), &len);
 
 	uint8_t buf[256];
-	((void (*)(uint8_t*)) x64exec(compiled, len))(buf); // prints "Hello World!"
+	void (*hello_world)(uint8_t*) = x64exec(compiled, len);
+	hello_world(buf); // prints "Hello World!"
+
+	x64exec_free(hello_world, len);
 }
