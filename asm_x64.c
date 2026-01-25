@@ -9307,7 +9307,7 @@ cont:
   }
 
   if(!resolved) {
-    error(ASMERR_INS_ARGUMENT_MISMATCH, "Argument mismatch for %s.", x64stringify(ins, 1));
+    error(ASMERR_INS_ARGUMENT_MISMATCH, "Argument mismatch/data size mismatch/unencodable: '%s'.", x64stringify(ins, 1));
     return NULL;
   }
 
@@ -9350,6 +9350,17 @@ static inline u32 encode(const x64Ins* ins, x64LookupActualIns* res, u8* opcode_
   // ----------------------------- Instruction encoding ----------------------------- //
 
   u8 *const opcode_dest_start = opcode_dest;
+  
+  if(res->mem_oper) {
+    
+    // Segment Register for memory operands - Prefix group 2 (GCC Ordering)
+    if(ins->params[res->mem_oper - 1].type & ((u64) 0x7 << 56))
+      *opcode_dest = ((u8[]) { 0x26, 0x2e, 0x36, 0x3e, 0x64, 0x65 })[((ins->params[res->mem_oper - 1].type >> 56) & 0x7) - 1], opcode_dest ++;
+  
+    // 67H prefix - Prefix group 4 (GCC Ordering)
+    if(ins->params[res->mem_oper - 1].value & ((u64) 0x1 << 60))
+      *opcode_dest = 0x67, opcode_dest ++;
+  }
 
   if(res->vex) {
     u8 vex_map = res->vex & 0xf;
@@ -9385,20 +9396,9 @@ static inline u32 encode(const x64Ins* ins, x64LookupActualIns* res, u8* opcode_
       opcode_dest += 2;
     }
   }
-  
-  if(res->mem_oper) {
-    
-    // Segment Register for memory operands - Prefix group 2 (GCC Ordering)
-    if(ins->params[res->mem_oper - 1].type & ((u64) 0x7 << 56))
-      *opcode_dest = ((u8[]) { 0x26, 0x2e, 0x36, 0x3e, 0x64, 0x65 })[((ins->params[res->mem_oper - 1].type >> 56) & 0x7) - 1], opcode_dest ++;
-  
-    // 67H prefix - Prefix group 4 (GCC Ordering)
-    if(ins->params[res->mem_oper - 1].value & ((u64) 0x1 << 60))
-      *opcode_dest = 0x67, opcode_dest ++;
-  }
 
   // Only for Normal **NON** VEX and EVEX instructions
-  if(!res->vex) {
+  else {
     
     // 66H prefix - Prefix group 3 (GCC Ordering) + FWAIT and Prefix Group 1
     if(res->prefixes) {
@@ -9619,7 +9619,7 @@ char* x64stringify(const x64 p, u32 num) {
         cursize += sprintf(code + cursize, "0x%llX", p[curins].params[i].value);
 
       else if(p[curins].params[i].type & (REL8 | REL32))
-        cursize += sprintf(code + cursize, "$%+d", (u32) p[curins].params[i].value);
+        cursize += sprintf(code + cursize, p[curins].params[i].value ? "$%+d" : "$", (u32) p[curins].params[i].value);
 
       // Rip relative memory operand detection
       else if(p[curins].params[i].type & (X64_ALLMEMMASK | allfarmask) && p[curins].params[i].value & ((u64)1 << 62))
