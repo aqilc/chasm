@@ -102,8 +102,8 @@ Other valid `mem()` syntax examples are:
 - Just like in regular assemblers, not specifying a specific size can be problematic when there's multiple possible ones.
 - `m8()`, `m16()`, `m32()`, `m64()`, `m128()`, `m256()` and `m512()` specify the exact size of data referenced, erroring when that size isn't available with that instruction.
 - `mem()` will not error when there's multiple sizes, instead using the smallest one available, but can cause bugs when it's not the size you intend.
-- You can use `x64mem` for more flexibility in size, like `{ a > b ? M8 : M16, x64mem(<normal mem() arguments>) }`. Uppercase `M<size>` are enums for the size.
-- Exception: Use `mem()` with FPU, as specifying the size doesn't mean much in the encoding.
+- Tip: You can use `x64mem` for more flexibility in size, like `{ a > b ? M8 : M16, x64mem(<normal mem() arguments>) }`. Uppercase `M<size>` are enums for the size.
+- Exception: Use `mem()` with FPU, as specifying the size doesn't mean much in the encoding. Exception to this exception are loading instructions like `FLD` where 32bit/64bit matters for integer size.
 
 > [!important]
 > **Make sure to pass in $none for register parameters you are not using, as it will assume eax if you pass in 0!** If you omit arguments though, `$none` is assumed :)
@@ -130,6 +130,39 @@ More examples in [`example/bf_compiler.c`](example/bf_compiler.c).
 > [!Important]
 > To get actual results with this syntax, you need to link your code with `x64as()`!
 
+### Examples of various instructions.
+
+```c
+x64 code = {
+  // Everyday                       // Intel Syntax/x64stringify result.
+  { MOV, al, imm(10)             }, // mov al, 10
+  { LEA, rcx, mem($r9, 8)        }, // lea rcx
+  { PUSH, rax                    }, // push rax
+  { CALL, r8                     }, // call r8
+  { JMP, rel(5)                  }, // jmp $+5
+
+  // Exotic
+  { POP, fs, {PREF66}            }, // o16 pop fs ; chasm doesn't stringify the o16 yet, but it of course, is encoded properly.
+  { RET, {FAR}                   }, // ret ; Intel actually says it's retf, but chasm doesn't stringify {FAR} or {PREF66}
+  { MOVQ, mm1, mem($rdx, 10)     }, // movq mm1, [rdx + 10]
+  { MOVUPD, xmm14, mem($rdx, 10) }, // movudp xmm14, [rdx + 10]
+  { ENTER, imm(10), imm(1)       }, // enter 10, 1
+  { ADDSUBPS, xmm4, m128($rax)   }, // addsubps xmm4, xmmword ptr [rax]
+  { PEXT, eax, ebx, mem($ecx)    }, // pext eax, ebx, [ecx] ; This is a VEX instruction but no v prefix.
+  { RDSEED, eax                  }, // rdseed eax
+  { CMPXCHG16B, mem($rdx)        }, // cmpxchg16b [rdx]
+  { PHMINPOSUW, xmm0, xmm0       }, // phminposuw xmm0, xmm0
+  { PCMPESTRI, xmm5, xmm10, imm(0b01110000) }, // pcmpestri xmm5, xmm10, 0b01110000
+  { FLD, m64($rax)               }, // fld qword ptr rax
+  { FMUL, st0, st1               }, // fmul st0, st1
+
+  // SIMD/VEX
+  { VPERM2F128, ymm0, ymm2, m256($rdx, 5), imm(0x30) }, // vperm2f128 ymm0, ymm2, ymmword ptr [rdx + 5], 0x30
+  { VBLENDVPD, ymm2, ymm1, mem($rax, 10, $rdx), ymm5 }, // vblendvpd ymm2, ymm1, [rax + 10 + rdx], ymm5
+  { VCMPPS, xmm3, xmm4, mem($r8, 0, $rdx), imm(0xff) }, // vcmpss xmm3, xmm4, [r8 + rdx], 0xff
+  { VGATHERQPD, ymm3, mem($rax, 10, $ymm5, 8), ymm2  }, // vgatherqpd ymm3, [rax + 0xA + ymm5 * 8], ymm2
+};
+```
 
 API: Functions
 --------------
@@ -185,6 +218,7 @@ Limitations
 -----------
 
 - No support for 32 bit legacy / protected mode instructions.
+- Does not play well with Windows headers.
 - No support for AVX-512.
   - Trying to change this, maybe with syntax like `ymm(10, k1, z)`.
 - No support for architectures other than x86-64 (like ARM).
